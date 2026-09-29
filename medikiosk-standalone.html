@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="MediKiosk - AI-Powered Patient Triage Kiosk System">
+  <title>MediKiosk | AI-Powered Patient Triage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ==========================================================================
+       CSS Variables & Design Tokens (Modern Healthcare Palette)
+       ========================================================================== */
+    :root {
+      --bg-main: #f4f7fb;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --border-focus: #1967d2;
+      --primary-blue: #1967d2;
+      --primary-hover: #1557b0;
+      --primary-light: #e8f2fe;
+      --accent-cyan: #0284c7;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --success-green: #16824b;
+      --success-light: #e8f7ee;
+      --error-red: #c62828;
+      --error-light: #fee2e2;
+      --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.04);
+      --shadow-card: 0 14px 34px rgba(25, 45, 80, 0.07);
+      --shadow-pop: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-card: 22px;
+      --radius-pill: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ==========================================================================
+       Header Styles
+       ========================================================================== */
+    .topbar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6%;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #1967d2 0%, #38bdf8 100%);
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(25, 103, 210, 0.25);
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .top-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .kiosk-station-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .status-online {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      background: var(--success-light);
+      color: var(--success-green);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulseGlow 1.8s infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* ==========================================================================
+       Main Container & Cards Layout
+       ========================================================================== */
+    .app-main {
+      flex: 1;
+      max-width: 1080px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 36px 20px 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .screen-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .screen-eyebrow {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--primary-blue);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .screen-header h2 {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+
+    .screen-header p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .auth-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      padding: 30px;
+      box-shadow: var(--shadow-card);
+      transition: all 0.25s ease;
+    }
+
+    .card h3 {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-top: 4px;
+      margin-bottom: 6px;
+    }
+
+    .card p.muted {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    /* Kiosk Access Badge */
+    .kiosk-badge-wrapper {
+      margin-bottom: 12px;
+    }
+
+    .kiosk-access-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 13px;
+      border-radius: var(--radius-pill);
+      background: var(--primary-light);
+      color: var(--primary-blue);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      border: 1px solid #d0e2fa;
+    }
+
+    /* ==========================================================================
+       Form Controls & Inputs
+       ========================================================================== */
+    .form-group {
+      margin-bottom: 18px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .req {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1.5px solid #d8e2ee;
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text-main);
+      background: #fbfcfe;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--border-focus);
+      background: #ffffff;
+      box-shadow: 0 0 0 3.5px rgba(25, 103, 210, 0.14);
+    }
+
+    input::placeholder {
+      color: #94a3b8;
+    }
+
+    .field-hint {
+      display: block;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Form Rows */
+    .form-row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* Buttons */
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: 0;
+      transition: all 0.2s ease;
+    }
+
+    .primary {
+      background: var(--primary-blue);
+      color: #ffffff;
+      padding: 13px 20px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(25, 103, 210, 0.2);
+    }
+
+    .primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(25, 103, 210, 0.28);
+    }
+
+    .primary:active {
+      transform: translateY(0);
+    }
+
+    .full {
+      width: 100%;
+      display: block;
+      margin-top: 12px;
+    }
+
+    .demo-btn {
+      background: #f1f5fa;
+      color: var(--primary-blue);
+      border: 1px solid #cfe0f5;
+      padding: 0 20px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .demo-btn:hover {
+      background: #e2effd;
+      border-color: var(--primary-blue);
+    }
+
+    /* Checkbox & Consent */
+    .consent-box {
+      margin: 18px 0 8px;
+      padding: 13px 15px;
+      border-radius: var(--radius-md);
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .consent-box input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: var(--primary-blue);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .consent-box span {
+      font-size: 13px;
+      color: #334155;
+      line-height: 1.45;
+      font-weight: 500;
+    }
+
+    /* Switch Auth Links */
+    .auth-switch {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .link-btn {
+      background: none;
+      border: none;
+      color: var(--primary-blue);
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 2px 4px;
+    }
+
+    .link-btn:hover {
+      color: var(--primary-hover);
+    }
+
+    /* Status Alerts */
+    .status {
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      border-radius: var(--radius-sm);
+      padding: 0;
+      transition: all 0.2s ease;
+    }
+
+    .status.error {
+      color: var(--error-red);
+      background: var(--error-light);
+      padding: 10px 14px;
+      border: 1px solid #fecaca;
+    }
+
+    .status.success {
+      color: var(--success-green);
+      background: var(--success-light);
+      padding: 10px 14px;
+      border: 1px solid #bbf7d0;
+    }
+
+    /* ==========================================================================
+       Patient Details Card
+       ========================================================================== */
+    .patient-details-card {
+      background: linear-gradient(145deg, #ffffff 0%, #f7faff 100%);
+      border: 1.5px solid #cfe0f5;
+      border-radius: var(--radius-card);
+      padding: 26px;
+      box-shadow: var(--shadow-card);
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .details-card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .patient-avatar-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: #e2effd;
+      color: var(--primary-blue);
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      border: 1px solid #c5dcf7;
+      flex-shrink: 0;
+    }
+
+    .details-card-header h3 {
+      margin: 3px 0 2px;
+      font-size: 18px;
+      color: var(--text-main);
+    }
+
+    .verified-badge {
+      background: var(--success-light);
+      color: var(--success-green);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      display: inline-block;
+    }
+
+    .details-divider {
+      height: 1px;
+      background: #e6eef7;
+      margin: 16px 0;
+    }
+
+    .details-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .detail-row {
+      background: #ffffff;
+      border: 1px solid #e5edf5;
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .detail-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      color: var(--text-main);
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    .details-card-footer {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px dashed #d5e4f3;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .status-ready-pill {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--success-green);
+      background: var(--success-light);
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+    }
+
+    /* ==========================================================================
+       Sign-Up View Wrapper
+       ========================================================================== */
+    .signup-card-wrap {
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* ==========================================================================
+       Proceed / Success Screen
+       ========================================================================== */
+    .proceed-card {
+      max-width: 680px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 40px 30px;
+      animation: slideUp 0.35s ease;
+    }
+
+    .proceed-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--success-light);
+      color: var(--success-green);
+      display: grid;
+      place-items: center;
+      font-size: 36px;
+      margin: 0 auto 16px;
+      font-weight: 800;
+    }
+
+    .proceed-meta-box {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin: 24px 0;
+      text-align: left;
+    }
+
+    .proceed-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .proceed-meta-item small {
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .proceed-meta-item b {
+      font-size: 14px;
+      color: var(--text-main);
+    }
+
+    /* ==========================================================================
+       Simulated SMS Modal (Smartphone Notification Look)
+       ========================================================================== */
+    .sms-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      display: grid;
+      place-items: center;
+      z-index: 100;
+      padding: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .sms-phone-card {
+      background: #ffffff;
+      width: min(420px, 94vw);
+      border-radius: 26px;
+      box-shadow: var(--shadow-pop);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      position: relative;
+      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .sms-top-notch {
+      width: 80px;
+      height: 5px;
+      background: #cbd5e1;
+      border-radius: var(--radius-pill);
+      margin: 10px auto 4px;
+    }
+
+    .sms-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .sms-brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--primary-blue);
+      color: #ffffff;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .sms-header-text {
+      flex: 1;
+      text-align: left;
+    }
+
+    .sms-header-text b {
+      display: block;
+      font-size: 14px;
+      color: var(--text-main);
+    }
+
+    .sms-to-number {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .sms-close-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      line-height: 1;
+    }
+
+    .sms-close-btn:hover {
+      color: #334155;
+    }
+
+    .sms-card-body {
+      padding: 18px 20px;
+      background: #f8fafc;
+      text-align: left;
+    }
+
+    .sms-bubble {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px 16px 16px 4px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .sms-bubble-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+
+    .sms-bubble p {
+      margin: 5px 0;
+      font-size: 13px;
+      color: #1e293b;
+      line-height: 1.45;
+    }
+
+    .sms-highlight-id {
+      display: inline-block;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 15px;
+      letter-spacing: 0.05em;
+      margin: 2px 0;
+      border: 1px solid #bae6fd;
+    }
+
+    .sms-sub {
+      font-size: 12px !important;
+      color: var(--text-muted) !important;
+      margin-top: 8px !important;
+    }
+
+    .sms-card-footer {
+      padding: 12px 20px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #ffffff;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .sms-timestamp {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .sm-btn {
+      padding: 9px 16px;
+      font-size: 13px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 13px 20px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all 0.25s ease;
+      z-index: 120;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Utilities */
+    .hidden {
+      display: none !important;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(18px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .auth-grid {
+        grid-template-columns: 1fr;
+      }
+      .topbar {
+        padding: 0 4%;
+      }
+      .app-main {
+        padding: 24px 16px 60px;
+      }
+      .card {
+        padding: 22px;
+      }
+      .form-row-2col, .details-info-grid, .proceed-meta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= HEADER ================= -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">✚</div>
+      <div>
+        <h1 class="brand-title">MediKiosk</h1>
+        <p class="brand-subtitle">AI-Powered Patient Triage</p>
+      </div>
+    </div>
+    <div class="top-status">
+      <span class="kiosk-station-badge">Kiosk #01</span>
+      <span class="status-online"><span class="pulse-dot"></span> Online</span>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="app-main">
+
+    <!-- Screen Heading -->
+    <div class="screen-header">
+      <span class="screen-eyebrow">Smart Patient Reception</span>
+      <h2 id="screenTitle">Sign in to MediKiosk</h2>
+      <p id="screenSubtitle">Sign in with your Kiosk User ID or register a new account to proceed with AI medical triage assessment.</p>
+    </div>
+
+    <!-- View 1: Sign-In Screen -->
+    <div id="signinView">
+      <div class="auth-grid">
+        <!-- Sign-In Card -->
+        <div class="card">
+          <div class="kiosk-badge-wrapper">
+            <span class="kiosk-access-badge">🔐 Kiosk Access</span>
+          </div>
+          <h3>Sign In</h3>
+          <p class="muted">Enter your User ID or use Demo to load sample patient credentials.</p>
+
+          <div class="form-group">
+            <label for="loginUserId">User ID</label>
+            <div class="input-row">
+              <input id="loginUserId" type="text" placeholder="e.g. MK-88219" autocomplete="username">
+              <button type="button" class="demo-btn" onclick="handleDemoClick()">Demo</button>
+            </div>
+          </div>
+
+          <button type="button" class="primary full" onclick="handleSignIn()">Sign in &amp; Continue →</button>
+          <div id="loginStatus" class="status"></div>
+
+          <p class="auth-switch">New user? <button type="button" class="link-btn" onclick="toggleView('signup')">Sign up</button></p>
+        </div>
+
+        <!-- Patient Details Card (Hidden initially, unhidden on Demo or post-Registration) -->
+        <div id="patientDetailsCard" class="patient-details-card hidden">
+          <div class="details-card-header">
+            <div class="patient-avatar-circle">👤</div>
+            <div>
+              <span class="verified-badge">✓ Active Patient Record</span>
+              <h3 id="previewPatientName">Eleanor Vance</h3>
+              <p class="muted" id="previewPatientMeta" style="margin-bottom: 0;">Loaded for triage assessment</p>
+            </div>
+          </div>
+
+          <div class="details-divider"></div>
+
+          <div class="details-info-grid">
+            <div class="detail-row">
+              <span class="detail-label">Full Name</span>
+              <b id="previewFullName" class="detail-value">Eleanor Vance</b>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Age</span>
+              <b id="previewAge" class="detail-value">34 yrs</b>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Gender</span>
+              <b id="previewGender" class="detail-value">Female</b>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Phone</span>
+              <b id="previewPhone" class="detail-value">9876543210</b>
+            </div>
+          </div>
+
+          <div class="details-card-footer">
+            <span class="status-ready-pill">● Ready to continue</span>
+            <small class="muted">Press <strong>"Sign in &amp; Continue"</strong> to proceed to triage.</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View 2: Sign-Up Screen -->
+    <div id="signupView" class="hidden">
+      <div id="signupCard" class="card signup-card-wrap">
+        <div class="kiosk-badge-wrapper">
+          <span class="kiosk-access-badge">📝 New Patient Registration</span>
+        </div>
+        <h3>Patient Sign Up</h3>
+        <p class="muted">Enter your details to register. Your Kiosk User ID will be auto-generated and sent via SMS.</p>
+
+        <form id="signupForm" onsubmit="event.preventDefault(); handleSignUp();">
+          <div class="form-group">
+            <label for="signupName">Full Name <span class="req">*</span></label>
+            <input id="signupName" type="text" placeholder="e.g. Eleanor Vance" required autocomplete="name">
+          </div>
+
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label for="signupAge">Age <span class="req">*</span></label>
+              <input id="signupAge" type="number" min="1" max="120" placeholder="e.g. 34" required>
+            </div>
+            <div class="form-group">
+              <label for="signupGender">Gender <span class="req">*</span></label>
+              <select id="signupGender" required>
+                <option value="" disabled selected>Select Gender</option>
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+                <option value="Non-binary">Non-binary</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="signupPhone">Mobile Phone Number (10 digits) <span class="req">*</span></label>
+            <input id="signupPhone" type="tel" maxlength="10" pattern="[0-9]{10}" placeholder="e.g. 9876543210" required autocomplete="tel">
+            <small class="field-hint">10-digit mobile number for receiving your Kiosk User ID via SMS.</small>
+          </div>
+
+          <label class="consent-box" for="signupConsent">
+            <input id="signupConsent" type="checkbox" required>
+            <span>I consent to sharing my information for medical triage assessment.</span>
+          </label>
+
+          <button type="submit" class="primary full">Register &amp; Send ID via SMS</button>
+          <div id="signupStatus" class="status"></div>
+
+          <p class="auth-switch">Already have an account? <button type="button" class="link-btn" onclick="toggleView('signin')">Sign in</button></p>
+        </form>
+      </div>
+    </div>
+
+    <!-- View 3: Proceeded / Active Triage State (After successful sign in) -->
+    <div id="proceededView" class="hidden">
+      <div class="card proceed-card">
+        <div class="proceed-icon">✓</div>
+        <span class="status-online" style="margin-bottom: 8px;">● Triage Assessment Initiated</span>
+        <h2>Welcome, <span id="sessionPatientName">Eleanor Vance</span></h2>
+        <p class="muted">Patient identity verified. Your kiosk triage consultation session is now active.</p>
+
+        <div class="proceed-meta-box">
+          <strong>Verified Patient Information</strong>
+          <div class="proceed-meta-grid">
+            <div class="proceed-meta-item">
+              <small>User ID</small>
+              <b id="sessionUserId">MK-88219</b>
+            </div>
+            <div class="proceed-meta-item">
+              <small>Age &amp; Gender</small>
+              <b id="sessionAgeGender">34 yrs · Female</b>
+            </div>
+            <div class="proceed-meta-item">
+              <small>Contact Phone</small>
+              <b id="sessionPhone">9876543210</b>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <button type="button" class="primary" onclick="showToast('Starting symptom triage questionnaire...')">🩺 Begin Symptom Assessment</button>
+          <button type="button" class="demo-btn" style="padding: 12px 20px;" onclick="resetToSignIn()">Sign Out / Switch Patient</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= SIMULATED SMS ALERT MODAL ================= -->
+  <div id="smsAlertModal" class="sms-modal hidden" role="dialog" aria-modal="true" aria-labelledby="smsSenderTitle">
+    <div class="sms-phone-card">
+      <div class="sms-top-notch"></div>
+      <div class="sms-card-header">
+        <div class="sms-brand-icon">💬</div>
+        <div class="sms-header-text">
+          <b id="smsSenderTitle">SMS Notification</b>
+          <span id="smsPhoneRecipient" class="sms-to-number">To: +91 9876543210</span>
+        </div>
+        <button type="button" class="sms-close-btn" onclick="dismissSmsModal()" aria-label="Close SMS">✕</button>
+      </div>
+      <div class="sms-card-body">
+        <div class="sms-bubble">
+          <div class="sms-bubble-tag">🏥 MediKiosk Patient Alert</div>
+          <p>Welcome to MediKiosk! Your patient registration is complete.</p>
+          <p>Your Kiosk User ID is: <strong id="smsGeneratedUserId" class="sms-highlight-id">MK-88219</strong></p>
+          <p class="sms-sub">Use this ID anytime at the kiosk. Your details have been loaded on screen.</p>
+        </div>
+      </div>
+      <div class="sms-card-footer">
+        <span class="sms-timestamp">Delivered just now</span>
+        <button type="button" class="primary sm-btn" onclick="dismissSmsModal()">Continue to Sign In →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOAST NOTIFICATION ================= -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    // In-memory patient registry initialized with the Demo account
+    const patientRegistry = {
+      "MK-88219": {
+        userId: "MK-88219",
+        name: "Eleanor Vance",
+        age: "34",
+        gender: "Female",
+        phone: "9876543210"
+      }
+    };
+
+    // Load any previously registered patients from localStorage
+    try {
+      const stored = JSON.parse(localStorage.getItem("medikiosk_patients") || "{}");
+      Object.assign(patientRegistry, stored);
+    } catch (e) {
+      console.warn("Could not parse local storage patients", e);
+    }
+
+    let activePatient = null;
+    let toastTimeout = null;
+
+    // Toast Utility
+    function showToast(message) {
+      const toastEl = document.getElementById("toast");
+      if (!toastEl) return;
+      toastEl.textContent = message;
+      toastEl.classList.add("show");
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toastEl.classList.remove("show");
+      }, 3500);
+    }
+
+    // Toggle between Sign-In and Sign-Up views
+    function toggleView(view) {
+      const signinView = document.getElementById("signinView");
+      const signupView = document.getElementById("signupView");
+      const proceededView = document.getElementById("proceededView");
+      const title = document.getElementById("screenTitle");
+      const subtitle = document.getElementById("screenSubtitle");
+
+      // Clear statuses
+      document.getElementById("loginStatus").textContent = "";
+      document.getElementById("loginStatus").className = "status";
+      document.getElementById("signupStatus").textContent = "";
+      document.getElementById("signupStatus").className = "status";
+
+      if (view === "signup") {
+        signinView.classList.add("hidden");
+        proceededView.classList.add("hidden");
+        signupView.classList.remove("hidden");
+        title.textContent = "Register for MediKiosk";
+        subtitle.textContent = "Fill in your basic information to receive an auto-generated Kiosk User ID via SMS.";
+        document.getElementById("signupName").focus();
+      } else if (view === "signin") {
+        signupView.classList.add("hidden");
+        proceededView.classList.add("hidden");
+        signinView.classList.remove("hidden");
+        title.textContent = "Sign in to MediKiosk";
+        subtitle.textContent = "Sign in with your Kiosk User ID or register a new account to proceed with AI medical triage assessment.";
+      } else if (view === "proceeded") {
+        signinView.classList.add("hidden");
+        signupView.classList.add("hidden");
+        proceededView.classList.remove("hidden");
+        title.textContent = "Patient Triage Session Active";
+        subtitle.textContent = "Identity verified. Initializing AI-driven symptom triage and doctor handoff pathway.";
+      }
+    }
+
+    // Populate and unhide the Patient Details card
+    function renderPatientDetailsCard(patient) {
+      const detailsCard = document.getElementById("patientDetailsCard");
+      if (!detailsCard) return;
+
+      document.getElementById("previewPatientName").textContent = patient.name;
+      document.getElementById("previewFullName").textContent = patient.name;
+      document.getElementById("previewAge").textContent = `${patient.age} yrs`;
+      document.getElementById("previewGender").textContent = patient.gender;
+      document.getElementById("previewPhone").textContent = patient.phone;
+      document.getElementById("previewPatientMeta").textContent = `Active Kiosk ID: ${patient.userId}`;
+
+      detailsCard.classList.remove("hidden");
+    }
+
+    // Handle "Demo" button click
+    function handleDemoClick() {
+      const userIdInput = document.getElementById("loginUserId");
+      userIdInput.value = "MK-88219";
+
+      const demoPatient = patientRegistry["MK-88219"];
+      activePatient = demoPatient;
+      renderPatientDetailsCard(demoPatient);
+
+      const status = document.getElementById("loginStatus");
+      status.className = "status success";
+      status.textContent = "✓ Demo profile loaded (MK-88219). Click 'Sign in & Continue' to proceed.";
+
+      showToast("Demo account MK-88219 loaded");
+    }
+
+    // Handle "Sign in & Continue" button click
+    function handleSignIn() {
+      const userIdInput = document.getElementById("loginUserId");
+      const userId = userIdInput.value.trim();
+      const status = document.getElementById("loginStatus");
+
+      status.className = "status";
+      status.textContent = "";
+
+      if (!userId) {
+        status.className = "status error";
+        status.textContent = "Please enter your User ID or click Demo.";
+        showToast("Please enter your User ID or click Demo.");
+        userIdInput.focus();
+        return;
+      }
+
+      const patient = patientRegistry[userId];
+
+      if (patient) {
+        activePatient = patient;
+        renderPatientDetailsCard(patient);
+
+        // Update proceed screen details
+        document.getElementById("sessionPatientName").textContent = patient.name;
+        document.getElementById("sessionUserId").textContent = patient.userId;
+        document.getElementById("sessionAgeGender").textContent = `${patient.age} yrs · ${patient.gender}`;
+        document.getElementById("sessionPhone").textContent = patient.phone;
+
+        status.className = "status success";
+        status.textContent = `✓ Signed in successfully as ${patient.name}! Proceeding...`;
+
+        showToast(`✓ Signed in as ${patient.name}. Proceeding to triage...`);
+
+        // Smooth transition to active triage session
+        setTimeout(() => {
+          toggleView("proceeded");
+        }, 500);
+      } else {
+        status.className = "status error";
+        status.textContent = `User ID "${userId}" not recognized. Please click Demo or Sign up.`;
+        showToast("User ID not recognized. Please click Demo or Sign up.");
+      }
+    }
+
+    // Handle Sign-Up form submission
+    function handleSignUp() {
+      const name = document.getElementById("signupName").value.trim();
+      const age = document.getElementById("signupAge").value.trim();
+      const gender = document.getElementById("signupGender").value;
+      const phone = document.getElementById("signupPhone").value.trim().replace(/\D/g, "");
+      const consent = document.getElementById("signupConsent").checked;
+      const status = document.getElementById("signupStatus");
+
+      status.className = "status";
+      status.textContent = "";
+
+      if (!name) {
+        status.className = "status error";
+        status.textContent = "Please enter your full name.";
+        document.getElementById("signupName").focus();
+        return;
+      }
+
+      const ageNum = parseInt(age, 10);
+      if (!age || isNaN(ageNum) || ageNum < 1 || ageNum > 120) {
+        status.className = "status error";
+        status.textContent = "Please enter a valid age between 1 and 120.";
+        document.getElementById("signupAge").focus();
+        return;
+      }
+
+      if (!gender) {
+        status.className = "status error";
+        status.textContent = "Please select your gender.";
+        document.getElementById("signupGender").focus();
+        return;
+      }
+
+      if (!phone || phone.length !== 10) {
+        status.className = "status error";
+        status.textContent = "Please enter a valid 10-digit mobile phone number.";
+        document.getElementById("signupPhone").focus();
+        return;
+      }
+
+      if (!consent) {
+        status.className = "status error";
+        status.textContent = "Consent is mandatory for medical triage assessment.";
+        document.getElementById("signupConsent").focus();
+        return;
+      }
+
+      // 1. Auto-generate random User ID (format: MK-XXXXX)
+      const randomDigits = Math.floor(10000 + Math.random() * 90000);
+      const generatedUserId = `MK-${randomDigits}`;
+
+      // 2. Create and store patient profile
+      const newPatient = {
+        userId: generatedUserId,
+        name: name,
+        age: String(ageNum),
+        gender: gender,
+        phone: phone
+      };
+
+      patientRegistry[generatedUserId] = newPatient;
+
+      try {
+        localStorage.setItem("medikiosk_patients", JSON.stringify(patientRegistry));
+      } catch (e) {
+        console.warn("Storage warning:", e);
+      }
+
+      // 3. Display simulated SMS alert containing new User ID and patient phone number
+      showSmsModal(generatedUserId, phone);
+
+      // 4. Automatically switch back to Sign-In screen
+      toggleView("signin");
+
+      // 5. Fill User ID field
+      const loginUserId = document.getElementById("loginUserId");
+      loginUserId.value = generatedUserId;
+
+      // 6. Load and unhide the Patient Details card
+      activePatient = newPatient;
+      renderPatientDetailsCard(newPatient);
+
+      const loginStatus = document.getElementById("loginStatus");
+      loginStatus.className = "status success";
+      loginStatus.textContent = `✓ Patient registered! User ID: ${generatedUserId} sent via SMS. Click "Sign in & Continue" to proceed.`;
+
+      showToast(`Registration complete! ID ${generatedUserId} sent via SMS.`);
+    }
+
+    // Show simulated SMS alert modal
+    function showSmsModal(userId, phone) {
+      const modal = document.getElementById("smsAlertModal");
+      document.getElementById("smsGeneratedUserId").textContent = userId;
+      document.getElementById("smsPhoneRecipient").textContent = `To: +91 ${phone}`;
+      modal.classList.remove("hidden");
+    }
+
+    // Dismiss simulated SMS alert modal
+    function dismissSmsModal() {
+      const modal = document.getElementById("smsAlertModal");
+      modal.classList.add("hidden");
+    }
+
+    // Reset to initial sign in state
+    function resetToSignIn() {
+      activePatient = null;
+      document.getElementById("loginUserId").value = "";
+      document.getElementById("patientDetailsCard").classList.add("hidden");
+      toggleView("signin");
+      showToast("Ready for next patient");
+    }
+
+    // Auto-detect typed ID
+    document.addEventListener("DOMContentLoaded", () => {
+      const loginUserIdInput = document.getElementById("loginUserId");
+      if (loginUserIdInput) {
+        loginUserIdInput.addEventListener("input", () => {
+          const val = loginUserIdInput.value.trim();
+          if (patientRegistry[val]) {
+            renderPatientDetailsCard(patientRegistry[val]);
+          }
+        });
+
+        loginUserIdInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleSignIn();
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

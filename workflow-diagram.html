@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MediKiosk - Complete System Workflow &amp; Tech Stack</title>
+  <style>
+    :root {
+      --ink: #0f172a;
+      --muted: #475569;
+      --subtle: #64748b;
+      --line: #e2e8f0;
+      --bg: #f1f5f9;
+      --white: #ffffff;
+      
+      /* Accents */
+      --blue: #0284c7;
+      --blue-soft: #f0f9ff;
+      --blue-border: #bae6fd;
+      
+      --teal: #0d9488;
+      --teal-soft: #f0fdfa;
+      --teal-border: #99f6e4;
+      
+      --emerald: #16a34a;
+      --emerald-soft: #f0fdf4;
+      --emerald-border: #bbf7d0;
+      
+      --purple: #7c3aed;
+      --purple-soft: #faf5ff;
+      --purple-border: #e9d5ff;
+      
+      --amber: #d97706;
+      --amber-soft: #fffbeb;
+      --amber-border: #fde68a;
+      
+      --rose: #e11d48;
+      --rose-soft: #fff1f2;
+      --rose-border: #fecdd3;
+      
+      --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 20px 40px rgba(15, 23, 42, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    body {
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-container {
+      width: min(1560px, 100%);
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: var(--shadow-lg);
+      padding: 36px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .app-container::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--blue), var(--teal), var(--purple), var(--rose));
+    }
+
+    /* Header */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1.5px solid var(--line);
+      padding-bottom: 24px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .app-branding h1 {
+      margin: 0;
+      font-size: clamp(26px, 2.5vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--teal-soft);
+      color: var(--teal);
+      border: 1px solid var(--teal-border);
+    }
+
+    .app-subtitle {
+      margin: 6px 0 0;
+      font-size: 14.5px;
+      color: var(--subtle);
+    }
+
+    .header-pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .role-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+
+    .role-patient { background: var(--blue-soft); color: var(--blue); border: 1px solid var(--blue-border); }
+    .role-doctor { background: var(--emerald-soft); color: var(--emerald); border: 1px solid var(--emerald-border); }
+    .role-admin { background: var(--purple-soft); color: var(--purple); border: 1px solid var(--purple-border); }
+
+    /* Main Grid: 2 Columns (Workflow 68% | Tech Stack 32%) */
+    .content-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.8fr) minmax(360px, 1.2fr);
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* Workflow Column */
+    .workflow-col {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .section-title-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 8px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .stage-card {
+      background: #ffffff;
+      border: 1.5px solid var(--line);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stage-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .stage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .stage-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    .stage-title {
+      margin: 0 0 6px;
+      font-size: 16.5px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .stage-desc {
+      margin: 0 0 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .step-box {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+
+    .step-badge {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--subtle);
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .step-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+
+    .step-detail {
+      font-size: 11.5px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .connector-down {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--subtle);
+      font-size: 20px;
+      font-weight: 900;
+      margin: -10px 0;
+    }
+
+    /* Portals Section */
+    .portals-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .portal-card {
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      border: 1.5px solid;
+    }
+
+    .portal-doctor {
+      background: var(--emerald-soft);
+      border-color: var(--emerald-border);
+    }
+
+    .portal-admin {
+      background: var(--purple-soft);
+      border-color: var(--purple-border);
+    }
+
+    .portal-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .portal-icon {
+      font-size: 24px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: #ffffff;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .portal-head h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .portal-menu-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .portal-menu-item {
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .portal-menu-item strong {
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .portal-menu-item span {
+      color: var(--subtle);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* RIGHT COLUMN: TECH STACK SIDEBAR */
+    .tech-sidebar {
+      position: sticky;
+      top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .tech-panel {
+      background: #ffffff;
+      border: 1.5px solid var(--line);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .tech-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 12px;
+    }
+
+    .tech-panel-header h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #0f172a;
+    }
+
+    .tech-category {
+      margin-bottom: 20px;
+    }
+
+    .tech-category:last-child {
+      margin-bottom: 0;
+    }
+
+    .category-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--subtle);
+      margin: 0 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tech-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .tech-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid;
+    }
+
+    .chip-frontend { background: var(--blue-soft); color: #0369a1; border-color: var(--blue-border); }
+    .chip-backend { background: var(--emerald-soft); color: #15803d; border-color: var(--emerald-border); }
+    .chip-db { background: var(--amber-soft); color: #b45309; border-color: var(--amber-border); }
+    .chip-security { background: var(--purple-soft); color: #6d28d9; border-color: var(--purple-border); }
+    .chip-standards { background: var(--teal-soft); color: #0f766e; border-color: var(--teal-border); }
+
+    .tech-desc-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .tech-desc-list li {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      line-height: 1.45;
+    }
+
+    .tech-desc-list li::before {
+      content: "▸";
+      color: var(--blue);
+      font-weight: 900;
+    }
+
+    .architecture-box {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #ffffff;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .architecture-box h3 {
+      margin: 0 0 10px;
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .architecture-box p {
+      margin: 0 0 10px;
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    .architecture-box ul {
+      margin: 0;
+      padding-left: 16px;
+      font-size: 11.5px;
+      color: #94a3b8;
+    }
+
+    .architecture-box li {
+      margin-bottom: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .content-layout {
+        grid-template-columns: 1fr;
+      }
+      .tech-sidebar {
+        position: static;
+      }
+      .portals-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 12px; }
+      .app-container { padding: 22px 18px; border-radius: 16px; }
+      .flow-steps { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="app-branding">
+        <h1>
+          <span>🏥 MediKiosk</span>
+          <span class="brand-badge">Comprehensive Architecture</span>
+        </h1>
+        <p class="app-subtitle">Full Program Workflow (Patient Kiosk, Doctor Workstation, Admin Hub) &amp; Integrated Tech Stack</p>
+      </div>
+
+      <div class="header-pills">
+        <span class="role-pill role-patient">👤 Patient Journey</span>
+        <span class="role-pill role-doctor">🩺 Doctor Workstation</span>
+        <span class="role-pill role-admin">⚙️ Hospital Admin Hub</span>
+      </div>
+    </header>
+
+    <!-- Main Layout: 2 Columns -->
+    <div class="content-layout">
+      
+      <!-- ================= LEFT COLUMN: WORKFLOW ================= -->
+      <main class="workflow-col">
+        
+        <div class="section-title-wrap">
+          <h2 class="section-title">🗺️ Complete MediKiosk Lifecycle &amp; User Flow</h2>
+          <span style="font-size: 12px; color: var(--subtle); font-weight: 700;">Multi-Persona Connected Ecosystem</span>
+        </div>
+
+        <!-- STAGE 1: BOOT & IDENTIFICATION -->
+        <article class="stage-card" style="border-left: 5px solid var(--blue);">
+          <div class="stage-header">
+            <h3 class="stage-title">1. Boot &amp; Patient Onboarding Flow</h3>
+            <span class="stage-tag" style="background: var(--blue-soft); color: var(--blue);">Phase 1 · Entry</span>
+          </div>
+          <p class="stage-desc">Patient approaches the kiosk terminal, selects their preferred regional dialect, and authenticates identity.</p>
+          
+          <div class="flow-steps">
+            <div class="step-box">
+              <span class="step-badge">STEP 1.1</span>
+              <div class="step-name">🚀 Kiosk Loader</div>
+              <div class="step-detail">2-second automated initialization check (no skip button) ensuring system integrity and camera readiness.</div>
+            </div>
+            <div class="step-box">
+              <span class="step-badge">STEP 1.2</span>
+              <div class="step-name">🌐 5-Language Picker</div>
+              <div class="step-detail">Dynamic i18n switcher: English, हिन्दी (Hindi), Hinglish, भोजपुरी (Bhojpuri), and اردو (Urdu).</div>
+            </div>
+            <div class="step-box">
+              <span class="step-badge">STEP 1.3</span>
+              <div class="step-name">🪪 Identity Sign-In</div>
+              <div class="step-detail">Supports ABHA Card Number, ABHA QR scanning (html5-qrcode), Demo account (MK-88219), or Guest Registration.</div>
+            </div>
+            <div class="step-box">
+              <span class="step-badge">STEP 1.4</span>
+              <div class="step-name">👤 Dynamic Topbar</div>
+              <div class="step-detail">Topbar flips dynamically from generic &quot;Profile&quot; to authenticated &quot;Eleanor Vance | ID: MK-88219&quot;.</div>
+            </div>
+          </div>
+        </article>
+
+        <div class="connector-down">↓</div>
+
+        <!-- STAGE 2: SYMPTOM INTAKE & SAFETY -->
+        <article class="stage-card" style="border-left: 5px solid var(--rose);">
+          <div class="stage-header">
+            <h3 class="stage-title">2. Multimodal Symptom Intake &amp; Pre-AI Safety Engine</h3>
+            <span class="stage-tag" style="background: var(--rose-soft); color: var(--rose);">Phase 2 · Clinical Safety</span>
+          </div>
+          <p class="stage-desc">Patient reports symptoms via voice or touch; deterministic rules immediately intercept life-threatening alerts.</p>
+          
+          <div class="flow-steps">
+            <div class="step-box">
+              <span class="step-badge">STEP 2.1</span>
+              <div class="step-name">🎙️ Voice Speech-to-Text</div>
+              <div class="step-detail">Browser Web Speech API captures spoken Indian dialects in real-time and populates chief complaints.</div>
+            </div>
+            <div class="step-box">
+              <span class="step-badge">STEP 2.2</span>
+              <div class="step-name">🏷️ Touch Symptom Chips</div>
+              <div class="step-detail">Instant 1-click clinical chips: Fever, Persistent Cough, Chest Tightness, Knee Pain, Stomach Cramps.</div>
+            </div>
+            <div class="step-box" style="background: var(--rose-soft); border-color: var(--rose-border);">
+              <span class="step-badge" style="color: var(--rose);">STEP 2.3 · SAFETY</span>
+              <div class="step-name" style="color: #9f1239;">🚨 Red Flag Gatekeeper</div>
+              <div class="step-detail">Deterministic check (chest pain, cannot breathe, stroke, seizure). Overrides AI to dispatch emergency team if found.</div>
+            </div>
+          </div>
+        </article>
+
+        <div class="connector-down">↓</div>
+
+        <!-- STAGE 3: CLINICAL TRIAGE -->
+        <article class="stage-card" style="border-left: 5px solid var(--amber);">
+          <div class="stage-header">
+            <h3 class="stage-title">3. AI Interactive Clinical Triage</h3>
+            <span class="stage-tag" style="background: var(--amber-soft); color: var(--amber);">Phase 3 · Urgency Scoring</span>
+          </div>
+          <p class="stage-desc">Interactive clinical dialogue evaluates progression and computes hospital queue urgency level.</p>
+          
+          <div class="flow-steps">
+            <div class="step-box">
+              <span class="step-badge">STEP 3.1</span>
+              <div class="step-name">💬 3-Question Chat</div>
+              <div class="step-detail">Assesses symptom onset duration, self-reported severity (Mild/Moderate/Severe), and worsening conditions.</div>
+            </div>
+            <div class="step-box">
+              <span class="step-badge">STEP 3.2</span>
+              <div class="step-name">⚖️ Urgency Categorization</div>
+              <div class="step-detail">Classifies encounter: 🟢 Routine (Low), 🟡 Priority (Medium), or 🔴 Emergency (High Priority).</div>
+            </div>
+            <div class="step-box">
+              <span class="step-badge">STEP 3.3</span>
+              <div class="step-name">🌐 Hybrid Failover</div>
+              <div class="step-detail">Communicates with Python FastAPI backend (/triage), with automatic zero-downtime offline fallback if disconnected.</div>
+            </div>
+          </div>
+        </article>
+
+        <div class="connector-down">↓</div>
+
+        <!-- STAGE 4: MEDICAL SUPPORT & DOCTOR RECOMMENDATION -->
+        <article class="stage-card" style="border-left: 5px solid var(--teal);">
+          <div class="stage-header">
+            <h3 class="stage-title">4. Medical Support Hub &amp; AI Doctor Recommendation</h3>
+            <span class="stage-tag" style="background: var(--teal-soft); color: var(--teal);">Phase 4 · Department Routing</span>
+          </div>
+          <p class="stage-desc">Symptom tokens are analyzed to recommend at least 3-4 specialized physicians with instant appointment booking.</p>
+          
+          <div class="flow-steps">
+            <div class="step-box" style="background: var(--teal-soft); border-color: var(--teal-border);">
+              <span class="step-badge" style="color: var(--teal);">STEP 4.1 · CORE FEATURE</span>
+              <div class="step-name" style="color: #0f766e;">👨‍⚕️ Doctor Recommendation</div>
+              <div class="step-detail">Keyword scoring algorithm matches symptoms to 8 specialist profiles. Computes match % (99%, 96%, 94%) and clinical reasoning.</div>
+            </div>
+            <div class="step-box">
+              <span class="step-badge">STEP 4.2</span>
+              <div class="step-name">🎟️ Instant Token Booking</div>
+              <div class="step-detail">Patient selects available doctor slot (e.g. 11:30 AM); generates Appointment Token (AP-983) and adds to live doctor queue.</div>
+            </div>
+            <div class="step-box">
+              <span class="step-badge">STEP 4.3</span>
+              <div class="step-name">🌿 Alternative Care (AYUSH)</div>
+              <div class="step-detail">Holistic pathways: Ayurveda, Yoga, Unani, Siddha, and Homeopathy with certified hospital vaidyas.</div>
+            </div>
+            <div class="step-box">
+              <span class="step-badge">STEP 4.4</span>
+              <div class="step-name">⚠️ Report Problem Modal</div>
+              <div class="step-detail">Direct trigger (#reportProblemModal) for reporting hardware/software kiosk issues straight to hospital admin.</div>
+            </div>
+          </div>
+        </article>
+
+        <div class="connector-down">↓</div>
+
+        <!-- STAGE 5: SUMMARY & COMPLETION -->
+        <article class="stage-card" style="border-left: 5px solid var(--emerald);">
+          <div class="stage-header">
+            <h3 class="stage-title">5. Clinical Summary, QR Generation &amp; Privacy Reset</h3>
+            <span class="stage-tag" style="background: var(--emerald-soft); color: var(--emerald);">Phase 5 · Archival</span>
+          </div>
+          <p class="stage-desc">Compiles full triage encounter, generates digital QR slip, persists records, and protects patient privacy.</p>
+          
+          <div class="flow-steps">
+            <div class="step-box">
+              <span class="step-badge">STEP 5.1</span>
+              <div class="step-name">📱 QR Code Slip</div>
+              <div class="step-detail">qrcodejs renders an instant scannable QR ticket containing clinical summary, booked doctor, and triage priority.</div>
+            </div>
+            <div class="step-box">
+              <span class="step-badge">STEP 5.2</span>
+              <div class="step-name">💾 Permanent Local Archival</div>
+              <div class="step-detail">Saves encounter to localStorage[medikiosk_patient_visits] ensuring complete history retention across browser reloads.</div>
+            </div>
+            <div class="step-box">
+              <span class="step-badge">STEP 5.3</span>
+              <div class="step-name">🔒 Privacy Guard on Finish</div>
+              <div class="step-detail">Clicking Finish Visit clears the active session and reverts the topbar back to generic &quot;Profile&quot; (no residual personal data).</div>
+            </div>
+          </div>
+        </article>
+
+        <div class="connector-down">↓</div>
+
+        <!-- STAGE 6: CONNECTED CLINICAL & ADMIN WORKSTATIONS -->
+        <div class="section-title-wrap" style="margin-top: 10px;">
+          <h2 class="section-title">🏥 Integrated Clinical &amp; Administrative Workstations</h2>
+          <span style="font-size: 12px; color: var(--subtle); font-weight: 700;">Top Bar Action Boxes</span>
+        </div>
+
+        <div class="portals-grid">
+          
+          <!-- DOCTOR PORTAL BOX -->
+          <div class="portal-card portal-doctor">
+            <div class="portal-head">
+              <div class="portal-icon">🩺</div>
+              <div>
+                <h3>Clinical Doctor Portal</h3>
+                <small style="color: var(--emerald); font-weight: 700;">Topbar Order: [Admin] ➔ [Doctor] ➔ [Profile]</small>
+              </div>
+            </div>
+            <p style="font-size: 12.5px; color: var(--muted); margin: 0 0 12px;">Dedicated workstation for hospital clinicians protected by PIN authentication.</p>
+            
+            <ul class="portal-menu-list">
+              <li class="portal-menu-item">
+                <strong><span>1.</span> 👨‍⚕️ Doctor Dashboard</strong>
+                <span>Live queue, intake metrics &amp; alerts</span>
+              </li>
+              <li class="portal-menu-item">
+                <strong><span>2.</span> 🩺 Active Consultation</strong>
+                <span>In-cabin exam, vitals, digital prescription</span>
+              </li>
+              <li class="portal-menu-item">
+                <strong><span>3.</span> 📈 Clinical Analysis</strong>
+                <span>Volume trends, triage breakdown, export</span>
+              </li>
+              <li class="portal-menu-item" style="background: #fff1f2; border-color: #fecdd3;">
+                <strong style="color: #be123c;"><span>4.</span> 🚪 Doctor Sign Out</strong>
+                <span style="color: #be123c;">Positioned compact right after Analysis</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- ADMIN PORTAL BOX -->
+          <div class="portal-card portal-admin">
+            <div class="portal-head">
+              <div class="portal-icon">⚙️</div>
+              <div>
+                <h3>Hospital Admin Hub</h3>
+                <small style="color: var(--purple); font-weight: 700;">5 Core Governance Menus</small>
+              </div>
+            </div>
+            <p style="font-size: 12.5px; color: var(--muted); margin: 0 0 12px;">Full governance, medical staff tracking, billing operations, and issue resolution.</p>
+            
+            <ul class="portal-menu-list">
+              <li class="portal-menu-item">
+                <strong><span>1.</span> 👥 Patient List</strong>
+                <span>CRUD patient registry &amp; records</span>
+              </li>
+              <li class="portal-menu-item">
+                <strong><span>2.</span> 👨‍⚕️ Doctor List</strong>
+                <span>Real-time app login status (isLoggedIn)</span>
+              </li>
+              <li class="portal-menu-item">
+                <strong><span>3.</span> 📋 Doctors Approval</strong>
+                <span>Medical council credentials, Approve/Reject</span>
+              </li>
+              <li class="portal-menu-item">
+                <strong><span>4.</span> 💳 Billing Part</strong>
+                <span>Revenue, UPI/Cash/PM-JAY &amp; New Bill Modal</span>
+              </li>
+              <li class="portal-menu-item">
+                <strong><span>5.</span> ⚠️ Report / Problem</strong>
+                <span>Kiosk tickets submitted by patients</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+      </main>
+
+      <!-- ================= RIGHT COLUMN: TECH STACK SIDEBAR ================= -->
+      <aside class="tech-sidebar">
+        
+        <div class="tech-panel">
+          
+          <div class="tech-panel-header">
+            <h2>💻 Technology Stack</h2>
+            <span class="stage-tag" style="background: var(--blue-soft); color: var(--blue);">Modern &amp; Resilient</span>
+          </div>
+
+          <!-- 1. FRONTEND -->
+          <div class="tech-category">
+            <h3 class="category-title">🎨 Frontend Technologies</h3>
+            <div class="tech-chips">
+              <span class="tech-chip chip-frontend">HTML5 Semantic SPA</span>
+              <span class="tech-chip chip-frontend">CSS3 Variables</span>
+              <span class="tech-chip chip-frontend">Vanilla JS (ES6+)</span>
+              <span class="tech-chip chip-frontend">Web Speech API</span>
+              <span class="tech-chip chip-frontend">LocalStorage API</span>
+            </div>
+            <ul class="tech-desc-list">
+              <li><strong>Zero Framework Overhead:</strong> Fast boot time and instant touch response without heavy bundle compilation.</li>
+              <li><strong>Custom i18n Engine:</strong> Real-time multilingual dictionary supporting English, Hindi, Hinglish, Bhojpuri, and Urdu.</li>
+              <li><strong>Web Speech API:</strong> Native voice recognition for hands-free symptom entry in outpatient areas.</li>
+            </ul>
+          </div>
+
+          <!-- 2. LIBRARIES & CDNS -->
+          <div class="tech-category">
+            <h3 class="category-title">📦 Client-Side Libraries (CDNs)</h3>
+            <div class="tech-chips">
+              <span class="tech-chip chip-frontend">html5-qrcode (v2.3.8)</span>
+              <span class="tech-chip chip-frontend">qrcodejs (v1.0.0)</span>
+            </div>
+            <ul class="tech-desc-list">
+              <li><strong>html5-qrcode:</strong> Camera-based ABHA card and health QR scanning.</li>
+              <li><strong>qrcodejs:</strong> Dynamic client-side rendering of scannable encounter tokens.</li>
+            </ul>
+          </div>
+
+          <!-- 3. BACKEND & API -->
+          <div class="tech-category">
+            <h3 class="category-title">⚡ Backend &amp; Server</h3>
+            <div class="tech-chips">
+              <span class="tech-chip chip-backend">Python 3.10+</span>
+              <span class="tech-chip chip-backend">FastAPI</span>
+              <span class="tech-chip chip-backend">Uvicorn ASGI</span>
+              <span class="tech-chip chip-backend">Pydantic</span>
+              <span class="tech-chip chip-backend">python-multipart</span>
+            </div>
+            <ul class="tech-desc-list">
+              <li><strong>FastAPI Framework:</strong> Asynchronous high-throughput REST API with automated OpenAPI docs.</li>
+              <li><strong>Uvicorn Server:</strong> Lightning-fast asynchronous server running Python endpoints.</li>
+              <li><strong>Pydantic Schemas:</strong> Strict validation for patient payloads and triage requests.</li>
+            </ul>
+          </div>
+
+          <!-- 4. DATABASE & STORAGE -->
+          <div class="tech-category">
+            <h3 class="category-title">🗄️ Database &amp; Persistence</h3>
+            <div class="tech-chips">
+              <span class="tech-chip chip-db">SQLite3 (medikiosk.db)</span>
+              <span class="tech-chip chip-db">Custom Schema Migration</span>
+              <span class="tech-chip chip-db">Browser LocalStorage</span>
+              <span class="tech-chip chip-db">Local File Storage</span>
+            </div>
+            <ul class="tech-desc-list">
+              <li><strong>SQLite3 Relational DB:</strong> Persistent relational tables for registered patients, visits, and histories.</li>
+              <li><strong>Hybrid Offline Cache:</strong> Browser storage retains visit records, bills, and tickets even if backend is disconnected.</li>
+            </ul>
+          </div>
+
+          <!-- 5. SECURITY & STANDARDS -->
+          <div class="tech-category">
+            <h3 class="category-title">🔒 Security &amp; Standards</h3>
+            <div class="tech-chips">
+              <span class="tech-chip chip-security">SHA-256 Hashing</span>
+              <span class="tech-chip chip-security">CORS Middleware</span>
+              <span class="tech-chip chip-standards">ABHA / ABDM</span>
+              <span class="tech-chip chip-standards">FHIR/HL7 Schemas</span>
+            </div>
+            <ul class="tech-desc-list">
+              <li><strong>Cryptographic Protection:</strong> User passwords hashed via SHA-256 before disk storage.</li>
+              <li><strong>ABHA Integration:</strong> Structured around Ayushman Bharat Health Account identifiers.</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Architecture Summary Card -->
+        <div class="architecture-box">
+          <h3>🏛️ Architecture Highlights</h3>
+          <p>MediKiosk uses an <strong>Offline-First Hybrid Model</strong> tailored for mission-critical public hospital deployment.</p>
+          <ul>
+            <li><strong>Single Page Architecture:</strong> Fast transitions between triage phases without browser page reloads.</li>
+            <li><strong>Deterministic Safety Gate:</strong> Pre-AI safety rules guarantee emergency conditions are escalated immediately.</li>
+            <li><strong>Role-Based Portals:</strong> Isolated workspaces for Kiosk Patients, Clinical Doctors, and System Administrators.</li>
+          </ul>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+</body>
+</html>

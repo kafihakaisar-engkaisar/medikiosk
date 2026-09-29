@@ -1,0 +1,3879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="MediKiosk - AI-Powered Patient Triage System">
+  <title>MediKiosk | AI Patient Triage</title>
+  <link rel="stylesheet" href="./style.css?v=2026">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+  <!-- ================= APP INTRO LOADER / SPLASH SCREEN ================= -->
+  <div id="appLoader" class="app-loader" role="status" aria-live="polite" aria-label="Loading MediKiosk Application">
+    <div class="loader-content">
+      <div class="loader-logo-wrapper">
+        <div class="loader-pulse-wave loader-wave-1"></div>
+        <div class="loader-pulse-wave loader-wave-2"></div>
+        <div class="loader-logo-badge">
+          <span class="loader-cross">✚</span>
+        </div>
+      </div>
+      
+      <div class="loader-brand">
+        <h1 class="loader-title">Medi<span>Kiosk</span></h1>
+        <p class="loader-tagline" data-i18n="brandTagline">AI-Powered Patient Triage</p>
+        <span class="loader-hospital-badge">Smart Healthcare Kiosk</span>
+      </div>
+
+      <!-- ECG Wave / Heartbeat line -->
+      <div class="loader-ecg-track">
+        <svg class="loader-ecg-svg" viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true">
+          <path class="loader-ecg-path" d="M0,20 L60,20 L75,5 L85,35 L95,12 L105,24 L115,20 L180,20 L195,5 L205,35 L215,12 L225,24 L235,20 L300,20" />
+        </svg>
+      </div>
+
+      <!-- Progress Bar & Status Text -->
+      <div class="loader-progress-box">
+        <div class="loader-progress-track">
+          <div id="loaderProgressBar" class="loader-progress-bar"></div>
+        </div>
+        <div class="loader-status-row">
+          <span id="loaderStatusText" class="loader-status-text">Initializing clinical triage system...</span>
+          <span id="loaderPercentText" class="loader-percent-text">0%</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">✚</div>
+        <div>
+          <h1>MediKiosk</h1>
+          <p data-i18n="brandTagline">AI-Powered Patient Triage</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <!-- 1. Top Bar Admin Box (Backend & Developer Access) -->
+        <button type="button" id="topbarAdminBtn" class="topbar-admin-box" onclick="openAdminAuthModal()" aria-label="Backend Admin Portal" title="Backend & Developer Portal">
+          <div class="topbar-admin-avatar">🛡️</div>
+          <div class="topbar-admin-text">
+            <span class="topbar-admin-name">Admin</span>
+            <span class="topbar-admin-role">Backend / Dev</span>
+          </div>
+        </button>
+
+        <!-- 2. Top Bar Doctor Box (Clinical Doctor Portal) -->
+        <button type="button" id="topbarDoctorBtn" class="topbar-doctor-box" onclick="openDoctorPortal()" aria-label="Clinical Doctor Portal" title="Doctor Dashboard, Analysis & Active Consultations">
+          <div class="topbar-doctor-avatar">🩺</div>
+          <div class="topbar-doctor-text">
+            <span class="topbar-doctor-name" id="topbarDoctorName">Doctor</span>
+            <span class="topbar-doctor-role" id="topbarDoctorRole">Clinical</span>
+          </div>
+        </button>
+
+        <!-- Top Bar Appointment Book Box -->
+        <button type="button" id="topbarAppointmentsBtn" class="topbar-appointment-box" onclick="openAppointmentsModal()" aria-label="Appointments Book" title="View & Manage Booked Appointments">
+          <div class="topbar-appointment-avatar">📅</div>
+          <div class="topbar-appointment-text">
+            <span class="topbar-appointment-name">Appointments</span>
+            <span class="topbar-appointment-role" id="topbarAppointmentSub">Book / Status</span>
+          </div>
+        </button>
+
+        <!-- 3. Top Bar Patient Profile Box -->
+        <button type="button" id="topbarProfileBtn" class="topbar-profile-box" onclick="togglePatientProfileModal(true)" aria-label="Open Patient Profile" title="View Patient Profile">
+          <div class="topbar-profile-avatar">👤</div>
+          <div class="topbar-profile-text">
+            <span class="topbar-profile-name" id="topbarProfileName">Profile</span>
+            <span class="topbar-profile-id" id="topbarProfileId" style="display: none;"></span>
+          </div>
+          <span class="topbar-profile-arrow">▼</span>
+        </button>
+
+        <!-- 4. Emergency / Medical Support Button -->
+        <button type="button" class="icon-btn emergency-btn" onclick="medicalSupport()" aria-label="Emergency and Medical Support">🚨 Emergency</button>
+
+        <!-- 5. Privacy Button -->
+        <button type="button" class="icon-btn" onclick="togglePrivacy()" data-i18n="privacyBtn" aria-label="Privacy and consent information">🔐 Privacy</button>
+      </div>
+    </header>
+
+
+    <!-- ================= MAIN ================= -->
+    <main>
+
+
+      <!-- ================= WELCOME ================= -->
+      <section id="welcome" class="screen active">
+
+        <div class="hero card">
+
+          <div class="hero-copy">
+
+            <span class="eyebrow" data-i18n="eyebrow">
+              SMART HOSPITAL PROTOTYPE
+            </span>
+
+            <h2 data-i18n="welcomeTitle" data-i18n-html>
+              Welcome to <span>MediKiosk</span>
+            </h2>
+
+            <p data-i18n="welcomeLead">
+              Quick patient registration, voice-based symptoms,
+              safety-first triage and instant doctor handoff.
+            </p>
+
+
+            <!-- Languages -->
+            <div class="language-row" id="languageRow">
+
+              <button
+                type="button"
+                class="lang active"
+                data-lang="English"
+              >
+                English
+              </button>
+
+              <button
+                type="button"
+                class="lang"
+                data-lang="Hindi"
+              >
+                हिन्दी
+              </button>
+
+              <button
+                type="button"
+                class="lang"
+                data-lang="Hinglish"
+              >
+                Hinglish
+              </button>
+
+              <button
+                type="button"
+                class="lang"
+                data-lang="Bhojpuri"
+              >
+                भोजपुरी
+              </button>
+              <button
+                type="button"
+                class="lang"
+                data-lang="Urdu"
+              >
+                Urdu
+              </button>
+
+              
+               
+            </div>
+
+
+            <!-- CTA -->
+            <div class="cta-row">
+
+              <button
+                type="button"
+                class="primary big"
+                onclick="showScreen('registration')"
+              >
+                <span data-i18n="ctaAbha">🆔 Sign In / Sign Out</span>
+              </button>
+
+              
+
+              
+
+            </div>
+
+          </div>
+
+
+          <!-- Hero visual -->
+          <div class="hero-visual">
+
+            <div class="pulse-ring">
+              🩺
+            </div>
+
+            <div class="mini-stat">
+              <b>24/7</b>
+              <span data-i18n="statAssist">Assistance</span>
+            </div>
+
+            <div class="mini-stat">
+              <b>4+</b>
+              <span data-i18n="statLangs">Languages</span>
+            </div>
+
+            <div class="mini-stat">
+              <b>1-Tap</b>
+              <span data-i18n="statEmergency">Emergency Alert</span>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- Features -->
+        <div class="feature-grid">
+
+          <div class="feature card">
+            <span>🎙️</span>
+            <b data-i18n="featVoiceTitle">Voice First</b>
+            <small data-i18n="featVoiceDesc">Speak your symptoms naturally.</small>
+          </div>
+
+          <div class="feature card">
+            <span>🚨</span>
+            <b data-i18n="featSafetyTitle">Safety Rules</b>
+            <small data-i18n="featSafetyDesc">Red flags are checked before AI.</small>
+          </div>
+
+          <div class="feature card">
+            <span>👨‍⚕️</span>
+            <b data-i18n="featDoctorTitle">Doctor Handoff</b>
+            <small data-i18n="featDoctorDesc">Structured summary for review.</small>
+          </div>
+
+          <div class="feature card">
+            <span>📴</span>
+            <b data-i18n="featOfflineTitle">Offline Ready</b>
+            <small data-i18n="featOfflineDesc">Basic triage works without internet.</small>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ================= QR SCANNER ================= -->
+      <section id="qrScanner" class="screen">
+
+        <div class="section-head">
+
+          <button
+            type="button"
+            class="back"
+            onclick="stopQRScanner(); showScreen('welcome')"
+            data-i18n="back"
+          >
+            ← Back
+          </button>
+
+          <div>
+            <span class="eyebrow">QR SCANNER</span>
+            <h2 data-i18n="qrScannerTitle">Scan Patient QR Code</h2>
+          </div>
+
+        </div>
+
+        <div class="card">
+
+          <div id="qr-reader" class="qr-reader"></div>
+
+          <div id="qr-result" class="qr-result hidden">
+
+            <h3 data-i18n="qrScannerResult">📱 Patient Summary</h3>
+
+            <div class="metric">
+              <span data-i18n="qrPatientName">Patient Name</span>
+              <b id="qrPatientName">—</b>
+            </div>
+
+            <div class="metric">
+              <span data-i18n="qrPatientAge">Age</span>
+              <b id="qrPatientAge">—</b>
+            </div>
+
+            <div class="metric">
+              <span data-i18n="qrPatientAbha">ABHA ID</span>
+              <b id="qrPatientAbha">—</b>
+            </div>
+
+            <div class="metric">
+              <span data-i18n="qrVisitId">Visit ID</span>
+              <b id="qrVisitId">—</b>
+            </div>
+
+            <hr>
+
+            <div class="metric">
+              <span data-i18n="qrPatientPriority">Priority</span>
+              <b id="qrPatientPriority">—</b>
+            </div>
+
+            <div class="metric">
+              <span data-i18n="qrPatientSymptoms">Chief Complaint</span>
+              <b id="qrPatientSymptoms">—</b>
+            </div>
+
+            <hr>
+
+            <h4 data-i18n="qrAiCollected">AI-Collected Information</h4>
+
+            <div class="metric">
+              <span data-i18n="qrDuration">Duration</span>
+              <b id="qrDuration">—</b>
+            </div>
+
+            <div class="metric">
+              <span data-i18n="qrSeverity">Severity</span>
+              <b id="qrSeverity">—</b>
+            </div>
+
+            <div class="metric">
+              <span data-i18n="qrCondition">Condition</span>
+              <b id="qrCondition">—</b>
+            </div>
+
+            <hr>
+
+            <div class="metric">
+              <span data-i18n="qrAiTriage">AI Triage Assessment</span>
+              <b id="qrAiTriage">—</b>
+            </div>
+
+            <div class="recommendation" id="qrRecommendation">
+              —
+            </div>
+
+            <button
+              type="button"
+              class="primary full"
+              onclick="loadScannedPatient()"
+              data-i18n="loadPatientData"
+            >
+              Load Patient Data
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+
+      <!-- ================= GUEST REGISTRATION ================= -->
+      <section id="guestRegistration" class="screen">
+
+        <div class="section-head">
+
+          <button
+            type="button"
+            class="back"
+            onclick="showScreen('welcome')"
+            data-i18n="back"
+          >
+            ← Back
+          </button>
+
+          <div>
+            <span class="eyebrow" data-i18n="step1">STEP 1</span>
+            <h2 data-i18n="guestRegTitle">Guest Registration</h2>
+          </div>
+
+          <span class="step" data-i18n="stepOf5_1">1 / 4</span>
+
+        </div>
+
+        <div class="card guest-info-card">
+          <div class="guest-notice">
+            <h3 data-i18n="guestNoticeTitle">🎭 Guest Mode</h3>
+            <p class="muted" data-i18n="guestNoticeText">
+              You are continuing as a guest. Your details will be stored temporarily for this session.
+            </p>
+          </div>
+
+          <label for="guestName" data-i18n="fullName">
+            Full Name <span class="optional-text" data-i18n="optional">(Optional)</span>
+          </label>
+
+          <input
+            id="guestName"
+            type="text"
+            placeholder="Enter your name"
+            data-i18n-placeholder="phName"
+          >
+
+          <label for="guestAge" data-i18n="age">
+            Age <span class="optional-text" data-i18n="optional">(Optional)</span>
+          </label>
+
+          <input
+            id="guestAge"
+            type="number"
+            min="1"
+            max="120"
+            placeholder="Age"
+            data-i18n-placeholder="phAge"
+          >
+
+          <label for="guestPhone" data-i18n="phone">
+            Phone <span class="optional-text" data-i18n="optional">(Optional)</span>
+          </label>
+
+          <input
+            id="guestPhone"
+            type="text"
+            placeholder="Optional for follow-up"
+            data-i18n-placeholder="phPhone"
+          >
+
+          <label for="guestGender">Gender <span class="optional-text">(Optional)</span></label>
+          <select id="guestGender" class="preference-select"><option value="">Prefer not to say</option><option>Female</option><option>Male</option><option>Non-binary</option></select>
+
+          <label class="check">
+            <input
+              id="guestConsent"
+              type="checkbox"
+            >
+            <span data-i18n="consent">
+              I consent to sharing my information with the treating healthcare team.
+            </span>
+          </label>
+
+          <button
+            type="button"
+            class="primary big"
+            onclick="completeGuestRegistration()"
+            data-i18n="continueGuest"
+          >
+            Continue as Guest →
+          </button>
+
+          <div class="alternative-option">
+            <p class="muted" data-i18n="orRegister">
+              Or <button type="button" class="link-btn" onclick="showScreen('registration')">Sign in or sign up</button>
+            </p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= REGISTRATION ================= -->
+      <section id="registration" class="screen">
+
+        <div class="section-head">
+
+          <button
+            type="button"
+            class="back"
+            onclick="showScreen('welcome')"
+            data-i18n="back"
+          >
+            ← Back
+          </button>
+
+          <div>
+            <span class="eyebrow" data-i18n="step1">STEP 1</span>
+            <h2>Sign in to MediKiosk</h2>
+          </div>
+
+          <span class="step" data-i18n="stepOf5_1">1 / 4</span>
+
+        </div>
+
+
+        <div class="auth-wrapper">
+          <!-- Sign-In Screen View -->
+          <div id="signinView" class="auth-view">
+            <div class="two-col auth-grid">
+              <!-- Sign-In Card -->
+              <div class="card auth-card">
+                <div class="card-badge-row">
+                  <span class="badge kiosk-access-badge">🔐 Kiosk Access</span>
+                </div>
+                <h3>Sign In</h3>
+                <p class="muted">Enter your User ID or use the Demo button to load a sample patient profile.</p>
+
+                <div class="form-group">
+                  <label for="loginUserId">User ID</label>
+                  <div class="input-row">
+                    <input id="loginUserId" type="text" placeholder="e.g. MK-88219" autocomplete="username">
+                    <button type="button" class="secondary demo-btn" onclick="demoAccount()">Demo</button>
+                  </div>
+                </div>
+
+                <div id="loginPasswordWrap" style="display:none;">
+                  <label for="loginPassword">Password</label>
+                  <input id="loginPassword" type="password" placeholder="Enter password" autocomplete="current-password">
+                </div>
+
+                <button type="button" class="primary full" onclick="loginPatient()">Sign in &amp; Continue</button>
+                <div id="loginStatus" class="status"></div>
+
+                <p class="auth-switch">New user? <button type="button" class="link-btn" onclick="toggleSignup(true)">Sign up</button></p>
+              </div>
+
+              <!-- Patient Details Card (Hidden initially, unhidden on Demo or post-Registration) -->
+              <div id="patientDetailsCard" class="card patient-details-card hidden">
+                <div class="details-card-header">
+                  <div class="patient-avatar-circle">👤</div>
+                  <div>
+                    <span class="badge verified-badge">✓ Active Patient Record</span>
+                    <h3 id="previewPatientName">Eleanor Vance</h3>
+                    <p class="muted" id="previewPatientMeta">Profile loaded for triage assessment</p>
+                  </div>
+                </div>
+
+                <div class="details-divider"></div>
+
+                <div class="details-info-grid">
+                  <div class="detail-row">
+                    <span class="detail-label">Full Name</span>
+                    <b id="previewFullName" class="detail-value">Eleanor Vance</b>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Age</span>
+                    <b id="previewAge" class="detail-value">34 yrs</b>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Gender</span>
+                    <b id="previewGender" class="detail-value">Female</b>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Phone</span>
+                    <b id="previewPhone" class="detail-value">9876543210</b>
+                  </div>
+                  <div class="detail-row" id="previewLocationRow">
+                    <span class="detail-label">Location</span>
+                    <b id="previewLocation" class="detail-value">Bistupur, Jamshedpur (PIN 831001)</b>
+                  </div>
+                </div>
+
+                <div class="details-card-footer" style="display: flex; flex-direction: column; gap: 8px; align-items: stretch;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="status-ready-pill">● Ready to continue</span>
+                    <button type="button" class="link-btn" onclick="togglePatientProfileModal(true)" style="font-size: 12.5px; font-weight: 700; color: #1967d2; padding: 0; background: none; border: none; cursor: pointer;">View Full Profile ↗</button>
+                  </div>
+                  <small class="muted">Press <strong>"Sign in &amp; Continue"</strong> to proceed to triage.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sign-Up Screen View (Toggled when Sign up is clicked) -->
+          <div id="signupCard" class="card auth-card signup-card-wrap hidden">
+            <div class="card-badge-row">
+              <span class="badge kiosk-access-badge">📝 New Patient Registration</span>
+            </div>
+            
+            <!-- STEP 1: PATIENT REGISTRATION FORM -->
+            <div id="signupFormStep">
+              <h3>Patient Sign Up</h3>
+              <p class="muted">Enter your details and 10-digit mobile number. Exactly one Patient ID is issued per mobile number.</p>
+
+              <form id="signupForm" onsubmit="event.preventDefault(); registerPatientAccount();">
+                <div class="form-group">
+                  <label for="signupName">Full Name</label>
+                  <input id="signupName" type="text" placeholder="Enter your full name" required autocomplete="name">
+                </div>
+
+                <div class="two-col form-row-2col">
+                  <div class="form-group">
+                    <label for="signupAge">Age</label>
+                    <input id="signupAge" type="number" min="1" max="120" placeholder="Age" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="signupGender">Gender</label>
+                    <select id="signupGender" class="preference-select" required>
+                      <option value="" disabled selected>Select Gender</option>
+                      <option value="Female">Female</option>
+                      <option value="Male">Male</option>
+                      <option value="Non-binary">Non-binary</option>
+                      <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="signupPhone">Mobile Phone Number (10 digits)</label>
+                  <div class="phone-input-prefix-row">
+                    <span class="phone-prefix-tag">+91</span>
+                    <input id="signupPhone" type="tel" maxlength="10" pattern="[0-9]{10}" placeholder="Enter 10-digit mobile number" required autocomplete="tel" oninput="onSignupPhoneInput(this.value)">
+                  </div>
+                  <small class="field-hint">Enter your 10-digit phone number. Exactly one Patient ID is issued per mobile number.</small>
+                  <div id="phoneVerifyNotice" class="phone-verify-notice hidden"></div>
+                </div>
+
+                <!-- Location & Address Section -->
+                <div class="signup-location-section" style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-top: 14px; margin-bottom: 12px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                    <div style="display: flex; align-items: center; gap: 7px;">
+                      <span style="font-size: 18px;">📍</span>
+                      <strong style="font-size: 14px; color: #1e293b;">Location &amp; Address</strong>
+                    </div>
+                    <span style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 10px; font-weight: 600;">Nearby Care</span>
+                  </div>
+                  <p class="muted" style="font-size: 12px; margin: 0 0 10px 0; color: #64748b;">
+                    🔒 <em>Your location is used only to find nearby healthcare services.</em>
+                  </p>
+
+                  <!-- Option A: Use My Current Location -->
+                  <div style="margin-bottom: 10px;">
+                    <button type="button" id="btnUseCurrentLocation" class="btn-location-detect" onclick="useCurrentLocationForSignup()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; background: #eff6ff; color: #1d4ed8; border: 1.5px solid #93c5fd; border-radius: 8px; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: all 0.15s ease;">
+                      <span>📍</span>
+                      <span>Use My Current Location</span>
+                    </button>
+                    <div id="signupLocationStatus" class="hidden" style="font-size: 12px; margin-top: 6px; padding: 6px 10px; border-radius: 6px; font-weight: 600;"></div>
+                  </div>
+
+                  <div style="position: relative; text-align: center; margin: 12px 0 8px;">
+                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 0;">
+                    <span style="position: relative; top: -10px; background: #f8fafc; padding: 0 10px; font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase;">or enter manually</span>
+                  </div>
+
+                  <!-- Option B: Manual Address Fields -->
+                  <div class="form-group" style="margin-bottom: 8px;">
+                    <label for="signupAddress" style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">Address *</label>
+                    <textarea id="signupAddress" rows="2" placeholder="Enter your address (Street, Area, Locality)" autocomplete="street-address" required style="width: 100%; border: 1.5px solid #cbd5e1; border-radius: 7px; padding: 8px 10px; font-family: inherit; font-size: 13px; resize: vertical; box-sizing: border-box;"></textarea>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label for="signupCity" style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">City *</label>
+                      <input id="signupCity" type="text" placeholder="e.g. Jamshedpur" required style="width: 100%; height: 36px; border: 1.5px solid #cbd5e1; border-radius: 7px; padding: 6px 10px; font-size: 13px; box-sizing: border-box;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label for="signupState" style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">State *</label>
+                      <input id="signupState" type="text" placeholder="e.g. Jharkhand" required style="width: 100%; height: 36px; border: 1.5px solid #cbd5e1; border-radius: 7px; padding: 6px 10px; font-size: 13px; box-sizing: border-box;">
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 2px;">
+                    <label for="signupPincode" style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">PIN Code (6 digits) *</label>
+                    <input id="signupPincode" type="text" maxlength="6" pattern="[0-9]{6}" placeholder="Enter 6-digit PIN code (e.g. 831001)" autocomplete="postal-code" inputmode="numeric" required style="width: 100%; height: 36px; border: 1.5px solid #cbd5e1; border-radius: 7px; padding: 6px 10px; font-size: 13px; font-weight: 600; box-sizing: border-box;">
+                    <div id="locationDetectNotice" class="hidden" style="font-size: 12px; margin-top: 6px; color: #047857; font-weight: 600;"></div>
+                  </div>
+
+                  <!-- Coordinates -->
+                  <input type="hidden" id="signupLatitude">
+                  <input type="hidden" id="signupLongitude">
+                </div>
+
+                <div class="consent-group">
+                  <label class="check consent-check">
+                    <input id="signupConsent" type="checkbox" required>
+                    <span>I consent to sharing my information for medical triage assessment.</span>
+                  </label>
+                </div>
+
+                <button type="submit" id="btnRegisterPatient" class="primary full">Verify Number &amp; Generate Patient ID ✓</button>
+                <div id="signupStatus" class="status"></div>
+
+                <p class="auth-switch">Already have an account? <button type="button" class="link-btn" onclick="toggleSignup(false)">Sign in</button></p>
+              </form>
+            </div>
+
+            <!-- REGISTRATION SUCCESS & ID REVEAL CARD -->
+            <div id="signupSuccessCard" class="signup-success-view hidden">
+              <div class="success-celebration-head">
+                <div class="success-icon-badge">✓</div>
+                <div>
+                  <span class="badge verified-badge">🎉 Registration Complete</span>
+                  <h3 style="margin: 4px 0 2px; font-size: 18px;">Your Kiosk Patient ID is Ready!</h3>
+                  <p class="muted" style="margin: 0; font-size: 13px;">Mobile verified successfully. Use this ID anytime to sign in.</p>
+                </div>
+              </div>
+
+              <div class="generated-id-box">
+                <span class="id-label">YOUR ASSIGNED KIOSK USER ID</span>
+                <div class="id-number-row">
+                  <span id="newlyGeneratedUserId" class="highlight-user-id">MK-88219</span>
+                  <button type="button" class="secondary copy-id-btn" onclick="copyGeneratedUserId()">📋 Copy ID</button>
+                </div>
+                <small class="id-subtext">Registered to mobile <b id="registeredSuccessPhone">+91 9876543210</b></small>
+              </div>
+
+              <div class="registered-summary-card">
+                <div class="summary-line"><span>Patient Name:</span> <strong id="registeredSuccessName">Eleanor Vance</strong></div>
+                <div class="summary-line"><span>Age / Gender:</span> <strong id="registeredSuccessDemographics">34 yrs · Female</strong></div>
+                <div class="summary-line"><span>Verified Mobile:</span> <strong id="registeredSuccessPhoneLine">+91 9876543210</strong></div>
+                <div class="summary-line"><span>Registered Location:</span> <strong id="registeredSuccessAddress">Main Road, Bistupur (PIN 831001)</strong></div>
+              </div>
+
+              <button type="button" class="primary full big" onclick="proceedToSignInWithId()">
+                Proceed to Sign In with ID →
+              </button>
+              <button type="button" class="secondary full" onclick="showNearbyHealthcareScreen()" style="margin-top: 10px; font-weight: 700; background: #eff6ff; color: #1d4ed8; border: 1.5px solid #bfdbfe;">
+                🏥 View Nearby Healthcare &amp; Doctors →
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </section>
+
+
+
+
+
+
+
+      <!-- ================= SYMPTOMS ================= -->
+      <section id="symptoms" class="screen">
+
+        <div class="section-head">
+
+          <button
+            type="button"
+            class="back"
+            onclick="showScreen('registration')"
+            data-i18n="back"
+          >
+            ← Back
+          </button>
+
+          <div>
+            <span class="eyebrow" data-i18n="step2">STEP 2</span>
+            <h2 data-i18n="symptomsTitle">Tell us your symptoms</h2>
+          </div>
+
+          <span class="step">2 / 4</span>
+
+        </div>
+
+
+        <!-- Voice -->
+        <div class="card voice-card">
+
+          <div class="voice-main">
+
+            <div
+              id="micCircle"
+              class="mic-circle"
+            >
+              🎙️
+            </div>
+
+            <h3 id="voiceTitle" data-i18n="voiceTitle">
+              Speak your symptoms
+            </h3>
+
+            <p
+              id="voiceText"
+              class="muted"
+              data-i18n="voiceExample"
+            >
+              Example: “I have fever and cough since yesterday.”
+            </p>
+
+            <div
+              class="wave"
+              id="wave"
+            >
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+            </div>
+
+            <button
+              type="button"
+              class="primary mic-btn"
+              onclick="startVoice()"
+              data-i18n="startListening"
+            >
+              Start Listening
+            </button>
+
+            <button
+              type="button"
+              class="secondary"
+              onclick="stopVoice()"
+              data-i18n="stop"
+            >
+              Stop
+            </button>
+
+          </div>
+
+
+          <!-- Manual Symptoms -->
+          <div class="manual">
+
+            <label for="symptomsText" data-i18n="orTypeSymptoms">
+              Or type your symptoms
+            </label>
+
+            <textarea
+              id="symptomsText"
+              rows="7"
+              placeholder="Describe what you are feeling, when it started and anything important..."
+              data-i18n-placeholder="phSymptoms"
+            ></textarea>
+
+
+            <div class="quick-row">
+
+              <button
+                type="button"
+                onclick="addSymptom('fever')"
+                data-i18n="plusFever"
+              >
+                + Fever
+              </button>
+
+              <button
+                type="button"
+                onclick="addSymptom('cough')"
+                data-i18n="plusCough"
+              >
+                + Cough
+              </button>
+
+              <button
+                type="button"
+                onclick="addSymptom('headache')"
+                data-i18n="plusHeadache"
+              >
+                + Headache
+              </button>
+
+              <button
+                type="button"
+                onclick="addSymptom('chest pain')"
+                data-i18n="plusChestPain"
+              >
+                + Chest pain
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Continue to triage -->
+        <button
+          type="button"
+          class="primary full"
+          onclick="continueToTriage()"
+          data-i18n="continue"
+        >
+          Continue to Triage →
+        </button>
+
+        <!-- ================= MEDICINE SCANNER ================= -->
+
+        <div class="card medicine-card">
+
+          <div class="section-head">
+
+            <div>
+
+              <span class="eyebrow" data-i18n="optional">
+                OPTIONAL
+              </span>
+
+              <h3 data-i18n="medicineTitle">
+                💊 Medicine Scanner
+              </h3>
+
+            </div>
+
+            <span class="badge" data-i18n="demoAi">
+              Demo AI
+            </span>
+
+          </div>
+
+
+          <p class="muted" data-i18n="medicineLead">
+            Upload a clear photo of a medicine package
+            for demo identification.
+          </p>
+
+
+          <div class="medicine-upload">
+
+
+            <!-- Upload box -->
+            <label
+              for="medicineImage"
+              class="upload-box"
+            >
+
+              <span>📷</span>
+
+              <b data-i18n="chooseImage">
+                Choose Medicine Image
+              </b>
+
+              <small data-i18n="imageTypes">
+                JPG, PNG or WEBP
+              </small>
+
+            </label>
+
+
+            <!-- File input -->
+            <input
+              id="medicineImage"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              hidden
+              onchange="previewMedicineImage(event); return false;"
+            >
+
+
+            <!-- Preview -->
+            <img
+              id="medicinePreview"
+              class="medicine-preview hidden"
+              alt="Medicine preview"
+            >
+
+          </div>
+
+
+          <!-- Identify button -->
+          <button
+            id="identifyMedicineBtn"
+            type="button"
+            class="primary full"
+            onclick="identifyMedicine(event); return false;"
+            data-i18n="identifyMedicine"
+          >
+            🔍 Identify Medicine
+          </button>
+
+
+          <!-- Status -->
+          <div
+            id="medicineStatus"
+            class="status"
+          ></div>
+
+
+          <!-- Medicine Result -->
+          <div
+            id="medicineResult"
+            class="medicine-result hidden"
+          >
+
+            <h3 data-i18n="medicineInfo">
+              💊 Medicine Information
+            </h3>
+
+
+            <div class="metric">
+
+              <span data-i18n="medicineName">
+                Medicine Name
+              </span>
+
+              <b id="medicineName">
+                —
+              </b>
+
+            </div>
+
+
+            <div class="metric">
+
+              <span data-i18n="composition">
+                Composition
+              </span>
+
+              <b id="medicineComposition">
+                —
+              </b>
+
+            </div>
+
+
+            <div class="metric">
+
+              <span data-i18n="information">
+                Information
+              </span>
+
+              <b id="medicineUses">
+                —
+              </b>
+
+            </div>
+
+
+            <div class="safety-note">
+
+              <b data-i18n="safetyLabel">⚠️ Safety:</b>
+
+              <span id="medicineWarning" data-i18n="medicineWarning">
+                Please verify medicine details with a qualified
+                healthcare professional.
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- Safety -->
+        <div class="card safety-note" data-i18n="safetyCheck">
+
+          🚨 Safety check: serious warning signs are checked locally before
+          the AI demo continues.
+
+        </div>
+
+
+        <button
+          type="button"
+          class="primary full"
+          onclick="runTriage()"
+          data-i18n="continueSafety"
+        >
+          Continue to Safety Check →
+        </button>
+
+      </section>
+
+
+
+      <!-- ================= TRIAGE ================= -->
+      <section id="triage" class="screen">
+
+        <div class="section-head">
+
+          <button
+            type="button"
+            class="back"
+            onclick="showScreen('symptoms')"
+            data-i18n="back"
+          >
+            ← Back
+          </button>
+
+          <div>
+
+            <span class="eyebrow" data-i18n="step3">
+              STEP 3
+            </span>
+
+            <h2 data-i18n="triageTitle">
+              AI Triage Assistant
+            </h2>
+
+          </div>
+
+          <span class="step">
+            3 / 4
+          </span>
+
+        </div>
+
+
+        <div class="two-col">
+
+
+          <!-- AI Chat -->
+          <div class="card">
+
+            <div class="ai-header">
+
+              <span class="ai-dot"></span>
+
+              <b>MediKiosk AI</b>
+
+              <span class="badge">
+                Demo
+              </span>
+
+            </div>
+
+
+            <div
+              id="chat"
+              class="chat"
+            >
+
+              <div class="message bot">
+                I’ll ask a few short questions to help organize
+                your information for a healthcare professional.
+              </div>
+
+            </div>
+
+
+            <div
+              id="questionArea"
+              class="question-area"
+            ></div>
+
+          </div>
+
+
+          <!-- Priority -->
+          <div class="card">
+
+            <h3>
+              📊 Preliminary Priority
+            </h3>
+
+            <div
+              id="priorityBox"
+              class="priority neutral"
+            >
+              Awaiting safety check
+            </div>
+
+
+            <div class="metric">
+
+              <span>
+                Red-flag engine
+              </span>
+
+              <b id="redFlagResult">
+                Pending
+              </b>
+
+            </div>
+
+
+            <div class="metric">
+
+              <span>
+                AI status
+              </span>
+
+              <b id="aiStatus">
+                Ready
+              </b>
+
+            </div>
+
+
+            <div class="metric">
+
+              <span>
+                Network
+              </span>
+
+              <b id="networkStatus">
+                Online
+              </b>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ================= MEDICAL HISTORY ================= -->
+      <section id="medicalHistory" class="screen">
+
+        <div class="section-head">
+
+          <button
+            type="button"
+            class="back"
+            onclick="showScreen('symptoms')"
+            data-i18n="back"
+          >
+            ← Back
+          </button>
+
+          <div>
+            <span class="eyebrow" data-i18n="step4">STEP 4</span>
+            <h2 data-i18n="medicalHistoryTitle">📋 Medical History</h2>
+          </div>
+
+          <span class="step" data-i18n="stepOf5_3">3 / 4</span>
+
+        </div>
+
+        <div class="medical-history-container">
+
+          <!-- Patient Info -->
+          <div class="card">
+            <h3 data-i18n="patientInformation">Patient Information</h3>
+            <div class="patient-info-display">
+              <p><strong data-i18n="name">Name:</strong> <span id="historyPatientName">-</span></p>
+              <p><strong data-i18n="age">Age:</strong> <span id="historyPatientAge">-</span></p>
+              <p><strong data-i18n="patientId">Patient ID:</strong> <span id="historyPatientId">-</span></p>
+              <p><strong>ABHA:</strong> <span id="historyPatientAbha">-</span></p>
+            </div>
+          </div>
+
+          <!-- Add Medical History Form -->
+          <div class="card">
+            <h3 data-i18n="addMedicalHistory">Add Medical History</h3>
+            
+            <label for="historyDiagnosis" data-i18n="diagnosis">Diagnosis</label>
+            <input
+              type="text"
+              id="historyDiagnosis"
+              placeholder="Enter diagnosis"
+              data-i18n-placeholder="phDiagnosis"
+            >
+
+            <label for="historySymptoms" data-i18n="symptoms">Symptoms</label>
+            <textarea
+              id="historySymptoms"
+              rows="3"
+              placeholder="Enter symptoms"
+              data-i18n-placeholder="phSymptoms"
+            ></textarea>
+
+            <label for="historyMedications" data-i18n="medications">Medications</label>
+            <input
+              type="text"
+              id="historyMedications"
+              placeholder="Enter medications"
+              data-i18n-placeholder="phMedications"
+            >
+
+            <label for="historyNotes" data-i18n="notes">Notes</label>
+            <textarea
+              id="historyNotes"
+              rows="3"
+              placeholder="Additional notes"
+              data-i18n-placeholder="phNotes"
+            ></textarea>
+
+            <button
+              type="button"
+              class="primary full"
+              onclick="saveMedicalHistory()"
+              data-i18n="saveHistory"
+            >
+              💾 Save Medical History
+            </button>
+          </div>
+
+          <!-- Medical History Records -->
+          <div class="card">
+            <h3 data-i18n="medicalHistoryRecords">Medical History Records</h3>
+            <div id="medicalHistoryList" class="history-list"><p class="muted" data-i18n="noHistory">No medical history records found</p></div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ================= MEDICAL SUPPORT ================= -->
+      <section id="medicalSupport" class="screen">
+
+        <div class="section-head">
+
+          <button
+            type="button"
+            class="back"
+            onclick="showScreen('triage')"
+            data-i18n="back"
+          >
+            ← Back
+          </button>
+
+          <div>
+            <span class="eyebrow" data-i18n="step4">STEP 4</span>
+            <h2 data-i18n="medicalSupportTitle">🏥 Medical Support</h2>
+            <p class="muted" data-i18n="medicalSupportSubtitle">Get the right help when you need it • Triage complete</p>
+          </div>
+
+          <span class="step">
+            4 / 4
+          </span>
+
+        </div>
+
+        <div class="medical-support-grid">
+
+          <!-- Doctor Suggestions & Appointment Card (Replaces Contact Doctor) -->
+          <div class="medical-card" data-modal="contactDoctorModal" onclick="openDoctorSuggestionsModal()">
+            <div class="medical-card-icon">👨‍⚕️</div>
+            <h3 data-i18n="contactDoctor">Recommended Doctors</h3>
+            <p class="muted" data-i18n="contactDoctorSubtitle">Symptom-based specialist suggestions &amp; booking</p>
+            <button type="button" class="medical-card-btn" data-i18n="openButton">Open →</button>
+          </div>
+
+          <!-- Nearby Healthcare Card -->
+          <div class="medical-card" data-modal="nearbyHealthcareModal">
+            <div class="medical-card-icon">🏥</div>
+            <h3 data-i18n="nearbyHealthcare">Nearby Healthcare</h3>
+            <p class="muted" data-i18n="nearbyHealthcareSubtitle">Hospitals • Clinics • PHC • CHC</p>
+            <button type="button" class="medical-card-btn" data-i18n="openButton">Open →</button>
+          </div>
+
+          <!-- Find Pharmacy Card -->
+          <div class="medical-card" data-modal="findPharmacyModal">
+            <div class="medical-card-icon">💊</div>
+            <h3 data-i18n="findPharmacy">Find Pharmacy</h3>
+            <p class="muted" data-i18n="findPharmacySubtitle">Find nearby medicine support</p>
+            <button type="button" class="medical-card-btn" data-i18n="openButton">Open →</button>
+          </div>
+
+          
+
+          <!-- AYUSH Holistic Care Card -->
+          <div class="medical-card ayush-support-card" data-modal="ayushModal" onclick="openModal('ayushModal')">
+            <div class="medical-card-icon">🌿</div>
+            <h3 data-i18n="ayushTitle">🌿 AYUSH Holistic Care</h3>
+            <p class="muted" data-i18n="ayushDescription">Ayurveda • Yoga • Unani • Siddha • Homeopathy</p>
+            <button type="button" class="medical-card-btn ayush-support-btn" data-i18n="openButton">Open →</button>
+          </div>
+
+          <!-- Emergency Help Card -->
+          <div class="medical-card emergency-card" data-modal="emergencyModal">
+            <div class="medical-card-icon emergency-icon">🚑</div>
+            <h3 data-i18n="emergencyHelp">Emergency Help</h3>
+            <p class="muted" data-i18n="emergencyHelpSubtitle">Immediate emergency assistance</p>
+            <button type="button" class="medical-card-btn emergency-btn" data-i18n="getHelpButton">Get Help</button>
+          </div>
+
+        </div>
+
+        <!-- Continue to Digital Summary -->
+        <div class="medical-support-footer" style="margin-top: 32px; text-align: center;">
+          <button
+            type="button"
+            class="primary full big"
+            onclick="buildSummary(true)"
+            style="font-size: 16px; padding: 16px;"
+          >
+            Continue to Digital Summary →
+          </button>
+          <p class="muted" style="margin-top: 10px; font-size: 13px;">
+            Review your triage priority, consultation QR code, and clinical report
+          </p>
+          <div style="margin-top: 16px;">
+            <button type="button" class="secondary sm-btn" onclick="openReportProblemModal()" style="border-radius: 999px; padding: 8px 18px; font-size: 13px; border: 1.5px dashed #f59e0b; color: #b45309; background: #fffbeb;">
+              ⚠️ Report a Kiosk Problem / Issue
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- ================= NEARBY HEALTHCARE RECOMMENDATIONS SCREEN ================= -->
+      <section id="nearbyHealthcareScreen" class="screen">
+        <div class="section-head" style="align-items: center; justify-content: space-between;">
+          <button type="button" class="back" onclick="goBackFromNearbyHealthcare()" aria-label="Go Back">
+            ← Back
+          </button>
+          <div>
+            <span class="eyebrow">LOCATION &amp; COMMUNITY CARE</span>
+            <h2 style="margin: 0; font-size: 24px;">🏥 Nearby Healthcare Recommendations</h2>
+            <p class="muted" style="margin: 3px 0 0; font-size: 13.5px;">Doctors • Hospitals • Pharmacies • Diagnostic Centres</p>
+          </div>
+          <span class="step" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 999px;">
+            📍 Live Proximity
+          </span>
+        </div>
+
+        <!-- Location Control Banner -->
+        <div class="nearby-location-banner" style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;">
+          <div style="display: flex; align-items: center; gap: 12px; min-width: 260px;">
+            <div style="width: 42px; height: 42px; border-radius: 12px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 22px;">📍</div>
+            <div>
+              <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 700;">Active Patient Location</div>
+              <div id="nearbyActiveLocationText" style="font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 1px;">Main Road, Bistupur, Jamshedpur (PIN 831001)</div>
+              <div id="nearbyCoordinatesNotice" style="font-size: 11.5px; color: #059669; font-weight: 600; margin-top: 2px;">✓ Verified via Coordinates &amp; Postal Registry</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <button type="button" id="btnNearbyUseCurrentLoc" class="btn-location-action" onclick="useCurrentLocationForNearby()" style="display: inline-flex; align-items: center; gap: 7px; background: #eff6ff; color: #1d4ed8; border: 1.5px solid #93c5fd; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+              <span>📍</span>
+              <span>Use My Current Location</span>
+            </button>
+            <button type="button" id="btnNearbyChangeLoc" class="btn-location-action" onclick="openChangeLocationModal()" style="display: inline-flex; align-items: center; gap: 7px; background: #f8fafc; color: #334155; border: 1.5px solid #cbd5e1; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+              <span>✏️</span>
+              <span>Change Location</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Category Tabs -->
+        <div class="nearby-tabs-wrapper" style="display: flex; gap: 8px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px;">
+          <button type="button" class="nearby-tab active" data-tab="doctors" onclick="switchNearbyTab('doctors')" style="padding: 10px 18px; border-radius: 10px 10px 0 0; font-size: 14px; font-weight: 700; border: none; background: #2563eb; color: #ffffff; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+            <span>👨‍⚕️</span>
+            <span>Doctors / Clinics</span>
+            <span id="countNearbyDoctors" class="tab-badge" style="background: rgba(255,255,255,0.25); color: #ffffff; font-size: 11px; padding: 2px 7px; border-radius: 999px;">0</span>
+          </button>
+          <button type="button" class="nearby-tab" data-tab="hospitals" onclick="switchNearbyTab('hospitals')" style="padding: 10px 18px; border-radius: 10px 10px 0 0; font-size: 14px; font-weight: 700; border: none; background: #f1f5f9; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+            <span>🏥</span>
+            <span>Hospitals &amp; CHCs</span>
+            <span id="countNearbyHospitals" class="tab-badge" style="background: #e2e8f0; color: #475569; font-size: 11px; padding: 2px 7px; border-radius: 999px;">0</span>
+          </button>
+          <button type="button" class="nearby-tab" data-tab="pharmacies" onclick="switchNearbyTab('pharmacies')" style="padding: 10px 18px; border-radius: 10px 10px 0 0; font-size: 14px; font-weight: 700; border: none; background: #f1f5f9; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+            <span>💊</span>
+            <span>Pharmacies &amp; Chemists</span>
+            <span id="countNearbyPharmacies" class="tab-badge" style="background: #e2e8f0; color: #475569; font-size: 11px; padding: 2px 7px; border-radius: 999px;">0</span>
+          </button>
+          <button type="button" class="nearby-tab" data-tab="diagnostics" onclick="switchNearbyTab('diagnostics')" style="padding: 10px 18px; border-radius: 10px 10px 0 0; font-size: 14px; font-weight: 700; border: none; background: #f1f5f9; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;">
+            <span>🧪</span>
+            <span>Diagnostic Centres</span>
+            <span id="countNearbyDiagnostics" class="tab-badge" style="background: #e2e8f0; color: #475569; font-size: 11px; padding: 2px 7px; border-radius: 999px;">0</span>
+          </button>
+        </div>
+
+        <!-- Filter / Search Row -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+          <div style="position: relative; flex: 1; min-width: 240px; max-width: 480px;">
+            <input type="text" id="nearbySearchInput" oninput="filterNearbyResults(this.value)" placeholder="Search by name, clinic, specialty or landmark..." style="width: 100%; height: 40px; padding: 8px 14px 8px 36px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13.5px; box-sizing: border-box;">
+            <span style="position: absolute; left: 12px; top: 11px; color: #94a3b8; font-size: 14px;">🔍</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12.5px; color: #64748b; font-weight: 600;">Sorted by:</span>
+            <span style="background: #f1f5f9; color: #334155; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 6px;">📏 Nearest Distance (km)</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Results List Container -->
+        <div id="nearbyHealthcareResultsContainer" class="nearby-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-bottom: 30px;">
+          <!-- Populated by renderNearbyHealthcareScreen() in script.js -->
+        </div>
+      </section>
+
+
+      <!-- ================= SUMMARY ================= -->
+      <section id="summary" class="screen">
+
+        <div class="section-head">
+
+          <button
+            type="button"
+            class="back"
+            onclick="showScreen('medicalSupport')"
+            data-i18n="back"
+          >
+            ← Back
+          </button>
+
+          <div>
+
+            <span class="eyebrow">
+              STEP 5
+            </span>
+
+            <h2>
+              Digital Patient Summary
+            </h2>
+
+          </div>
+
+          <span class="step">
+            5 / 5
+          </span>
+
+        </div>
+
+
+        <div class="two-col">
+
+
+          <!-- Summary (Patient Clinical Details) -->
+          <div class="card summary-card">
+
+            <div class="summary-top">
+
+              <div>
+
+                <span class="eyebrow" data-i18n="patient">
+                  PATIENT
+                </span>
+
+                <h2 id="summaryName">
+                  Patient
+                </h2>
+
+                <p
+                  id="summaryMeta"
+                  class="muted"
+                ></p>
+
+                <p
+                  id="summaryVisitId"
+                  class="muted"
+                  style="font-weight: 600; color: #1967d2;"
+                ></p>
+
+                <span id="summaryGender" style="display: none;"></span>
+
+              </div>
+
+
+              <div
+                id="summaryPriority"
+                class="priority"
+              >
+                Medium Priority
+              </div>
+
+            </div>
+
+
+            <hr>
+
+            <h3 data-i18n="chiefComplaint">Chief Complaint</h3>
+
+            <div class="summary-complaint-box" style="padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin: 8px 0 16px;">
+              <p id="summarySymptoms" style="margin: 0; font-size: 15px; color: #1e293b; line-height: 1.5; font-weight: 500;"></p>
+            </div>
+
+            <div class="consultation-summary-grid" style="grid-template-columns: repeat(2, 1fr); margin: 16px 0 20px;">
+              <div><span>Visit Date &amp; Time</span><b id="summaryVisitDate">—</b></div>
+              <div><span>Healthcare Pathway</span><b id="summaryPathway">Conventional Healthcare</b></div>
+            </div>
+
+            <span id="summaryMedicalHistory" style="display: none;"></span>
+            <span id="summaryMedication" style="display: none;"></span>
+
+            <h3 data-i18n="aiCollected">AI-collected Information</h3>
+
+            <div id="summaryAnswers"></div>
+
+            <div class="disclaimer">
+              Prototype only — this does not diagnose disease
+              or replace clinical assessment.
+            </div>
+
+          </div>
+
+
+
+          <!-- QR -->
+          <div class="card qr-summary-card">
+
+            <h3>
+              <span data-i18n="qrTitle">Temporary QR Summary</span>
+            </h3>
+
+            <p class="muted" data-i18n="qrLead">
+              Demo QR contains a temporary local summary reference.
+            </p>
+
+            <div id="qrcode"></div>
+
+            <button
+              type="button"
+              class="secondary full"
+              onclick="showSummaryModal()"
+              data-i18n="viewSummary"
+            >
+              👁️ View Summary
+            </button>
+
+            <button
+              type="button"
+              class="primary full"
+              onclick="sendToDoctor()"
+              data-i18n="sendToDoctor"
+            >
+              👨‍⚕️ Send to Doctor Dashboard
+            </button>
+
+            <button
+              type="button"
+              class="secondary full"
+              onclick="copySummary()"
+              data-i18n="copySummary"
+            >
+              📋 Copy Summary
+            </button>
+
+            
+
+          </div>
+
+        </div>
+
+
+        <button type="button" class="primary full" onclick="saveCurrentVisit()">💾 Save Visit &amp; Finish</button>
+
+      </section>
+
+
+      <!-- ================= MODALS ================= -->
+      
+      <!-- Appointment Book & Booking Management Modal -->
+      <div id="appointmentsBookModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="appointmentsBookModalTitle">
+        <div class="modal-content appointment-book-modal-content">
+          <button class="modal-close" onclick="closeModal('appointmentsBookModal')" aria-label="Close">×</button>
+          
+          <div class="appointment-modal-head">
+            <div class="appointment-modal-icon">📅</div>
+            <div>
+              <h2 id="appointmentsBookModalTitle" style="margin: 0; font-size: 22px; color: #0f172a;">Appointment Book</h2>
+              <p class="muted" style="margin: 3px 0 0; font-size: 13px;">View and manage your scheduled consultations, assigned doctors &amp; tokens</p>
+            </div>
+          </div>
+
+          <!-- Patient ID Search & Filter Bar -->
+          <div class="appointment-search-box">
+            <div class="appointment-search-row">
+              <div class="appointment-input-wrap">
+                <label for="appointmentSearchPatientId" class="appointment-search-label">ENTER PATIENT ID TO VIEW BOOKINGS</label>
+                <div class="appointment-input-inner">
+                  <span class="appointment-id-prefix">🆔</span>
+                  <input type="text" id="appointmentSearchPatientId" placeholder="Enter Patient ID (e.g. MK-88219)" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();searchPatientAppointments();}">
+                </div>
+              </div>
+              <button type="button" class="primary" id="btnSearchAppointments" onclick="searchPatientAppointments()">
+                🔍 View Bookings
+              </button>
+            </div>
+            <div id="appointmentActivePatientHint" class="appointment-active-hint"></div>
+          </div>
+
+          <!-- Appointment Status / Counter Bar -->
+          <div class="appointment-status-bar">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3 style="margin: 0; font-size: 15px; color: #1e293b;">Active Consultations</h3>
+              <span id="appointmentCountBadge" class="appointment-count-badge">0 Bookings</span>
+            </div>
+            <button type="button" class="secondary" onclick="openDoctorSuggestionsModal()" style="font-size: 12px; padding: 5px 12px; font-weight: 700;">
+              + Book Recommended Doctor
+            </button>
+          </div>
+
+          <!-- Appointments List Container -->
+          <div id="appointmentBookingList" class="appointment-booking-list">
+            <!-- Populated dynamically with booked doctor appointments or empty state -->
+          </div>
+
+          <!-- Footer -->
+          <div class="appointment-modal-footer">
+            <span class="muted" style="font-size: 12px;">🏥 MediKiosk Real-Time Doctor Scheduling &amp; Token Desk</span>
+            <button type="button" class="secondary" onclick="closeModal('appointmentsBookModal')">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doctor Suggestions & Appointment Booking Modal (Replaces Contact Doctor) -->
+      <div id="contactDoctorModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="contactDoctorModalTitle">
+        <div class="modal-content doctor-suggestion-modal-content" style="max-width: 680px; max-height: 90vh; overflow-y: auto; padding: 26px;">
+          <button class="modal-close" onclick="closeModal('contactDoctorModal')" aria-label="Close">×</button>
+          
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+            <div style="font-size: 32px;">👨‍⚕️</div>
+            <div>
+              <h2 id="contactDoctorModalTitle" data-i18n="contactDoctorModalTitle" style="margin: 0; font-size: 22px;">Doctor Suggestions &amp; Appointment Booking</h2>
+              <p class="muted" style="margin: 3px 0 0; font-size: 13px;">Specialist suggestions matched to your symptoms with instant token appointment booking</p>
+            </div>
+          </div>
+
+          <!-- Symptom Context & Dynamic Refinement Bar -->
+          <div class="symptom-match-bar" style="background: #f0f7ff; border: 1.5px solid #bfdbfe; border-radius: 14px; padding: 14px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px;">
+              <div>
+                <span style="font-size: 11.5px; font-weight: 700; color: #1d4ed8; text-transform: uppercase; letter-spacing: 0.5px;">Active Patient Symptom</span>
+                <p id="doctorSuggestCurrentSymptom" style="margin: 3px 0 0; font-weight: 700; font-size: 14.5px; color: #1e3a8a;">
+                  Loading patient symptoms...
+                </p>
+              </div>
+              <span class="status-badge" style="background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; font-size: 11px; padding: 3px 8px; border-radius: 6px; white-space: nowrap;">
+                🎯 AI Matched
+              </span>
+            </div>
+
+            <!-- Quick symptom refine chips -->
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; border-top: 1px dashed #bfdbfe; padding-top: 8px;">
+              <span style="font-size: 11.5px; color: #475569; font-weight: 600;">Explore specialists for:</span>
+              <button type="button" class="symptom-chip" onclick="refineDoctorSymptom('fever cough sore throat cold', this)" style="padding: 4px 10px; font-size: 11.5px; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600;">🌡️ Fever / Cough</button>
+              <button type="button" class="symptom-chip" onclick="refineDoctorSymptom('chest pain heart palpitations breathlessness', this)" style="padding: 4px 10px; font-size: 11.5px; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600;">❤️ Chest / Heart</button>
+              <button type="button" class="symptom-chip" onclick="refineDoctorSymptom('joint bone back pain knee fracture arthritis', this)" style="padding: 4px 10px; font-size: 11.5px; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600;">🦴 Bone / Joints</button>
+              <button type="button" class="symptom-chip" onclick="refineDoctorSymptom('child infant baby pediatric fever cold', this)" style="padding: 4px 10px; font-size: 11.5px; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600;">👶 Child / Pediatrics</button>
+              <button type="button" class="symptom-chip" onclick="refineDoctorSymptom('stomach nausea vomiting abdomen digestion acidity', this)" style="padding: 4px 10px; font-size: 11.5px; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600;">🤢 Stomach / Gastro</button>
+              <button type="button" class="symptom-chip" onclick="refineDoctorSymptom('ear nose throat sinus tonsils hearing', this)" style="padding: 4px 10px; font-size: 11.5px; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600;">👂 ENT / Sinus</button>
+              <button type="button" class="symptom-chip" onclick="refineDoctorSymptom('skin rash allergy itching eczema', this)" style="padding: 4px 10px; font-size: 11.5px; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600;">🧴 Skin / Allergy</button>
+            </div>
+
+            <!-- Patient Location Context Row -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #bfdbfe; font-size: 12px; color: #1e40af; flex-wrap: wrap; gap: 6px;">
+              <span>📍 Recommending specialists near: <strong id="doctorSuggestCurrentLocation">Detecting location...</strong></span>
+              <span class="status-badge" style="background: #e0e7ff; color: #3730a3; font-size: 11px;">📍 Proximity Optimized</span>
+            </div>
+          </div>
+
+          <!-- Appointment Confirmation Banner (Populated on booking) -->
+          <div id="appointmentConfirmationArea" class="hidden" style="margin-bottom: 16px;"></div>
+
+          <!-- Doctor Recommendations Header -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="margin: 0; font-size: 16px; color: #0f172a;">Recommended Specialists (3+ Available)</h3>
+            <span id="doctorMatchCountBadge" style="font-size: 12px; font-weight: 700; color: #0369a1; background: #e0f2fe; padding: 2px 10px; border-radius: 999px;">
+              3 Specialists Available
+            </span>
+          </div>
+
+          <!-- Container for Dynamic Doctor Cards -->
+          <div id="doctorSuggestionList" class="doctor-suggestion-list" style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- Populated dynamically with 3+ doctor suggestion cards -->
+          </div>
+
+          <!-- Footer Actions -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 14px; border-top: 1px solid #e2e8f0;">
+            <span class="muted" style="font-size: 12px;">🏥 MediKiosk Real-Time Clinical Scheduling</span>
+            <button type="button" class="secondary" onclick="closeModal('contactDoctorModal')">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nearby Healthcare Modal (Location-Based Recommendations) -->
+      <div id="nearbyHealthcareModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="nearbyHealthcareModalTitle">
+        <div class="modal-content nearby-healthcare-modal-content" style="max-width: 720px; max-height: 90vh; overflow-y: auto; padding: 26px;">
+          <button class="modal-close" onclick="closeModal('nearbyHealthcareModal')" aria-label="Close">×</button>
+          
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+            <div style="font-size: 32px;">🏥</div>
+            <div>
+              <h2 id="nearbyHealthcareModalTitle" data-i18n="nearbyHealthcareModalTitle" style="margin: 0; font-size: 22px;">Nearby Hospitals &amp; Healthcare Centers</h2>
+              <p class="muted" style="margin: 3px 0 0; font-size: 13px;">Real-time healthcare recommendations prioritized by your registered address</p>
+            </div>
+          </div>
+
+          <!-- Patient Location Context & Custom Search Bar -->
+          <div class="location-context-bar" style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+              <div>
+                <span style="font-size: 11.5px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 0.5px;">📍 Active Patient Location</span>
+                <p id="nearbyHospitalCurrentLocation" style="margin: 3px 0 0; font-weight: 700; font-size: 14.5px; color: #14532d;">
+                  Locating registered address...
+                </p>
+              </div>
+              <span id="nearbyHospitalMatchedBadge" class="status-badge" style="background: #dcfce7; color: #166534; border: 1px solid #86efac; font-size: 11.5px; padding: 3px 9px; border-radius: 6px; white-space: nowrap;">
+                🎯 Location-Matched
+              </span>
+            </div>
+
+            <!-- Search and Filter Row -->
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" id="nearbyHospitalSearchInput" placeholder="Search by hospital name, specialty, or area (e.g. Bistupur, ICU, Trauma)..." style="flex: 1; padding: 8px 12px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 8px;" oninput="onNearbyHospitalSearchInput(this.value)">
+              <button type="button" class="secondary" onclick="detectPatientLocation(true)" style="padding: 8px 14px; font-size: 12px; white-space: nowrap;">📍 GPS Refresh</button>
+            </div>
+
+            <!-- Quick category filter chips -->
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; border-top: 1px dashed #bbf7d0; padding-top: 8px;">
+              <span style="font-size: 11.5px; color: #475569; font-weight: 600;">Filter:</span>
+              <button type="button" class="hosp-filter-chip active" onclick="filterHospitalsCategory('all', this)">All Facilities</button>
+              <button type="button" class="hosp-filter-chip" onclick="filterHospitalsCategory('emergency', this)">🚨 24/7 Emergency</button>
+              <button type="button" class="hosp-filter-chip" onclick="filterHospitalsCategory('multispecialty', this)">🏥 Multispecialty</button>
+              <button type="button" class="hosp-filter-chip" onclick="filterHospitalsCategory('chc', this)">🏛️ Govt / CHC / PHC</button>
+              <button type="button" class="hosp-filter-chip" onclick="filterHospitalsCategory('clinic', this)">🩺 Super-Specialty</button>
+            </div>
+          </div>
+
+          <!-- Dynamic Hospital List -->
+          <div id="nearbyHealthcareList" class="healthcare-list" style="display: flex; flex-direction: column; gap: 14px;">
+            <!-- Populated dynamically by renderNearbyHospitals() -->
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 14px; border-top: 1px solid #e2e8f0;">
+            <span class="muted" style="font-size: 12px;">📍 MediKiosk Intelligent Geo-Triage Routing</span>
+            <button type="button" class="secondary" onclick="closeModal('nearbyHealthcareModal')">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Find Pharmacy Modal (Location-Based Recommendations) -->
+      <div id="findPharmacyModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="findPharmacyModalTitle">
+        <div class="modal-content nearby-pharmacy-modal-content" style="max-width: 720px; max-height: 90vh; overflow-y: auto; padding: 26px;">
+          <button class="modal-close" onclick="closeModal('findPharmacyModal')" aria-label="Close">×</button>
+          
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+            <div style="font-size: 32px;">💊</div>
+            <div>
+              <h2 id="findPharmacyModalTitle" data-i18n="findPharmacyModalTitle" style="margin: 0; font-size: 22px;">Nearby Pharmacies &amp; Chemist Shops</h2>
+              <p class="muted" style="margin: 3px 0 0; font-size: 13px;">Verified pharmacies recommended based on your registered address &amp; PIN code</p>
+            </div>
+          </div>
+
+          <!-- Patient Location Context & Custom Search Bar -->
+          <div class="location-context-bar" style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+              <div>
+                <span style="font-size: 11.5px; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 0.5px;">📍 Active Patient Location</span>
+                <p id="nearbyPharmacyCurrentLocation" style="margin: 3px 0 0; font-weight: 700; font-size: 14.5px; color: #14532d;">
+                  Locating registered address...
+                </p>
+              </div>
+              <span id="nearbyPharmacyMatchedBadge" class="status-badge" style="background: #dcfce7; color: #166534; border: 1px solid #86efac; font-size: 11.5px; padding: 3px 9px; border-radius: 6px; white-space: nowrap;">
+                🎯 PIN-Matched
+              </span>
+            </div>
+
+            <!-- Search and Filter Row -->
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" id="nearbyPharmacySearchInput" placeholder="Search by pharmacy name, area, or PIN (e.g. Apollo, 831001, Jan Aushadhi)..." style="flex: 1; padding: 8px 12px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 8px;" oninput="onNearbyPharmacySearchInput(this.value)">
+              <button type="button" class="secondary" onclick="detectPatientLocation(true)" style="padding: 8px 14px; font-size: 12px; white-space: nowrap;">📍 GPS Refresh</button>
+            </div>
+          </div>
+
+          <!-- Dynamic Pharmacy List -->
+          <div id="nearbyPharmacyList" class="pharmacy-list" style="display: flex; flex-direction: column; gap: 14px;">
+            <!-- Populated dynamically by renderNearbyPharmacies() -->
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 14px; border-top: 1px solid #e2e8f0;">
+            <span class="muted" style="font-size: 12px;">💊 MediKiosk 24/7 Pharmacy &amp; Medicine Network</span>
+            <button type="button" class="secondary" onclick="closeModal('findPharmacyModal')">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Change Location Modal -->
+      <div id="changeLocationModal" class="modal hidden admin-submodal" role="dialog" aria-modal="true" aria-labelledby="changeLocationModalTitle">
+        <div class="modal-box" style="max-width: 520px; width: min(520px, 95vw); border-radius: 16px; padding: 22px; background: #ffffff; position: relative;">
+          <button type="button" class="close" onclick="closeChangeLocationModal()" aria-label="Close" style="position: absolute; top: 16px; right: 18px; font-size: 22px;">×</button>
+          <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 14px; padding-right: 28px;">
+            <div style="font-size: 24px;">📍</div>
+            <div>
+              <h2 id="changeLocationModalTitle" style="margin: 0; font-size: 18px; font-weight: 700; color: #0f172a;">Change Healthcare Location</h2>
+              <p class="muted" style="margin: 2px 0 0; font-size: 12.5px;">Update location to find specialists &amp; centres in another area</p>
+            </div>
+          </div>
+
+          <form id="changeLocationForm" onsubmit="event.preventDefault(); applyChangedLocation();">
+            <div style="margin-bottom: 12px;">
+              <button type="button" class="btn-location-detect" onclick="useCurrentLocationForModal()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; background: #eff6ff; color: #1d4ed8; border: 1.5px solid #93c5fd; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                <span>📍 Detect Current GPS Location</span>
+              </button>
+              <div id="changeLocModalStatus" class="hidden" style="font-size: 12px; margin-top: 5px; font-weight: 600;"></div>
+            </div>
+
+            <div class="field" style="margin-bottom: 10px;">
+              <label for="changeLocAddress" style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">Address *</label>
+              <textarea id="changeLocAddress" rows="2" placeholder="e.g. Main Road, Bistupur, Near City Market" required style="width: 100%; border-radius: 7px; border: 1.5px solid #cbd5e1; padding: 8px; font-family: inherit; font-size: 13px; box-sizing: border-box; resize: vertical;"></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+              <div class="field" style="margin-bottom: 0;">
+                <label for="changeLocCity" style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">City *</label>
+                <input type="text" id="changeLocCity" placeholder="e.g. Jamshedpur" required style="width: 100%; height: 36px; border-radius: 7px; border: 1.5px solid #cbd5e1; padding: 6px 10px; font-size: 13px; box-sizing: border-box;">
+              </div>
+              <div class="field" style="margin-bottom: 0;">
+                <label for="changeLocState" style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">State *</label>
+                <input type="text" id="changeLocState" placeholder="e.g. Jharkhand" required style="width: 100%; height: 36px; border-radius: 7px; border: 1.5px solid #cbd5e1; padding: 6px 10px; font-size: 13px; box-sizing: border-box;">
+              </div>
+            </div>
+
+            <div class="field" style="margin-bottom: 16px;">
+              <label for="changeLocPincode" style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">Area Postal PIN Code (6 digits) *</label>
+              <input type="text" id="changeLocPincode" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="e.g. 831001" required style="width: 100%; height: 36px; border-radius: 7px; border: 1.5px solid #cbd5e1; padding: 6px 10px; font-size: 13.5px; font-weight: 600; box-sizing: border-box;">
+            </div>
+
+            <input type="hidden" id="changeLocLatitude">
+            <input type="hidden" id="changeLocLongitude">
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+              <button type="button" class="secondary" onclick="closeChangeLocationModal()" style="padding: 8px 16px; border-radius: 7px; font-size: 13px; border: 1.5px solid #cbd5e1; background: #f8fafc; color: #475569; font-weight: 600; cursor: pointer;">Cancel</button>
+              <button type="submit" class="primary" style="background: #2563eb; color: #ffffff; font-weight: 700; font-size: 13.5px; padding: 9px 20px; border-radius: 7px; border: none; cursor: pointer;">
+                ✓ Update &amp; Refresh Results
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Emergency Help Modal -->
+      <div id="emergencyModal" class="modal emergency-modal hidden">
+        <div class="modal-content emergency-content">
+          <button class="modal-close" onclick="closeModal('emergencyModal')">×</button>
+          <h2 data-i18n="pharmacyModalTitle">🚑 Emergency Help</h2>
+          
+          <div class="emergency-content">
+            <p class="emergency-question" data-i18n="emergencyQuestion">Need immediate medical help?</p>
+            
+            <div class="emergency-number">
+              <div class="emergency-icon-large">📞</div>
+              <div class="emergency-details">
+                <h3 data-i18n="emergencyNumber">Emergency Number</h3>
+                <p class="emergency-phone">112</p>
+              </div>
+            </div>
+
+            <div class="emergency-facility">
+              <h3 data-i18n="nearestEmergencyFacility">Nearest Emergency Facility</h3>
+              <p class="muted">City Hospital Emergency Ward</p>
+              <p class="muted">2.1 km away • Emergency Available</p>
+            </div>
+
+            <div class="ambulance-info">
+              <h3 data-i18n="ambulanceAssistance">🚑 Ambulance Assistance</h3>
+              <p class="muted">Available at City Hospital</p>
+              <p class="muted">📞 +91-123-456-7890</p>
+            </div>
+
+            <div class="safety-message">
+              <p class="warning-text" data-i18n="safetyMessage">⚠️ If the condition is serious or rapidly worsening, seek immediate emergency medical care.</p>
+            </div>
+
+            <div class="emergency-actions">
+              <button type="button" class="emergency-call-btn" onclick="makeEmergencyCall('112')" data-i18n="callButton">📞 Call</button>
+              <button type="button" class="emergency-directions-btn" onclick="openGoogleMaps('City Hospital Emergency Ward')" data-i18n="getDirectionsButton">🗺️ Get Directions</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AYUSH Holistic Care Modal -->
+      <div id="ayushModal" class="modal hidden">
+        <div class="modal-content ayush-modal-content">
+          <button class="modal-close" onclick="closeModal('ayushModal')">×</button>
+          
+          <div class="ayush-modal-header">
+            <h2 data-i18n="ayushTitle">🌿 AYUSH - Traditional Medicine</h2>
+            <p class="muted" data-i18n="ayushDescription">Explore Ayurveda, Yoga, Unani, Siddha, and Homeopathy remedies for your symptoms</p>
+          </div>
+
+          <!-- Quick Action Buttons: Call & Directions -->
+          <div class="ayush-quick-actions">
+            <div class="ayush-action-card">
+              <div class="ayush-action-left">
+                <span class="ayush-action-icon">📞</span>
+                <div>
+                  <strong>National AYUSH Teleconsultation</strong>
+                  <p class="muted">Govt. of India Helpline: 14443 (Toll-Free)</p>
+                </div>
+              </div>
+              <button type="button" class="ayush-quick-call-btn" onclick="makePhoneCall('14443')">📞 Call 14443</button>
+            </div>
+
+            <div class="ayush-action-card">
+              <div class="ayush-action-left">
+                <span class="ayush-action-icon">🗺️</span>
+                <div>
+                  <strong>Nearby AYUSH Centers</strong>
+                  <p class="muted">Find certified Ayurvedic, Siddha, Unani & Homeopathic clinics</p>
+                </div>
+              </div>
+              <button type="button" class="ayush-quick-dir-btn" onclick="getDirectionsFromPatientLocation('AYUSH Hospital and Wellness Centre', '')">🗺️ Directions</button>
+            </div>
+          </div>
+
+          <!-- AYUSH Recommendations Section -->
+          <div id="ayushRecommendationsSection" class="ayush-recommendations-section hidden">
+            <h4 data-i18n="ayushRecommendations">AYUSH Recommendations</h4>
+            <div id="ayushRecommendationsContent"></div>
+          </div>
+
+          <!-- Get Recommendations Button -->
+          <button
+            type="button"
+            class="primary full"
+            onclick="getAyushRecommendationsForSupport()"
+            data-i18n="getAyushRecommendations"
+          >
+            🌿 Get AYUSH Recommendations
+          </button>
+
+          <!-- Divider -->
+          <div style="margin: 18px 0 10px; border-top: 1px solid #e2e8f0; padding-top: 14px;">
+            <label style="margin-top: 0;" data-i18n="selectAyushSystem"><strong>Select AYUSH System:</strong></label>
+          </div>
+
+          <!-- AYUSH System Selection -->
+          <div class="ayush-systems">
+            <label class="ayush-system-card">
+              <input type="radio" name="ayush_system" value="ayurveda" checked>
+              <div class="system-content">
+                <span class="system-icon">🌿</span>
+                <span class="system-name" data-i18n="ayurveda">Ayurveda</span>
+              </div>
+            </label>
+            
+            <label class="ayush-system-card">
+              <input type="radio" name="ayush_system" value="yoga">
+              <div class="system-content">
+                <span class="system-icon">🧘</span>
+                <span class="system-name" data-i18n="yoga">Yoga & Naturopathy</span>
+              </div>
+            </label>
+            
+            <label class="ayush-system-card">
+              <input type="radio" name="ayush_system" value="unani">
+              <div class="system-content">
+                <span class="system-icon">⚕️</span>
+                <span class="system-name" data-i18n="unani">Unani</span>
+              </div>
+            </label>
+            
+            <label class="ayush-system-card">
+              <input type="radio" name="ayush_system" value="siddha">
+              <div class="system-content">
+                <span class="system-icon">🔬</span>
+                <span class="system-name" data-i18n="siddha">Siddha</span>
+              </div>
+            </label>
+            
+            <label class="ayush-system-card">
+              <input type="radio" name="ayush_system" value="homeopathy">
+              <div class="system-content">
+                <span class="system-icon">💊</span>
+                <span class="system-name" data-i18n="homeopathy">Homeopathy</span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Symptom Target & Quick Chips -->
+          <div style="margin-top: 14px;">
+            <label for="ayushConditionInput" style="margin-top: 0;"><strong>Symptom or Health Focus:</strong></label>
+            <div style="display: flex; gap: 8px; margin-top: 6px;">
+              <input type="text" id="ayushConditionInput" placeholder="e.g. fever, cough, headache, chest pain, digestion, joint pain..." style="flex: 1;" />
+              <button type="button" class="primary" onclick="getAyushRecommendations()" style="white-space: nowrap;" data-i18n="getAyushRecommendations">🌿 Get Recommendations</button>
+            </div>
+            <div class="ayush-quick-chips" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+              <button type="button" class="chip-btn" onclick="setAyushSymptom('Fever')">+ Fever</button>
+              <button type="button" class="chip-btn" onclick="setAyushSymptom('Cough')">+ Cough & Cold</button>
+              <button type="button" class="chip-btn" onclick="setAyushSymptom('Headache')">+ Headache</button>
+              <button type="button" class="chip-btn" onclick="setAyushSymptom('Stomach pain')">+ Indigestion</button>
+              <button type="button" class="chip-btn" onclick="setAyushSymptom('Chest pain')">+ Chest Discomfort</button>
+              <button type="button" class="chip-btn" onclick="setAyushSymptom('Joint pain')">+ Joint Pain</button>
+              <button type="button" class="chip-btn" onclick="setAyushSymptom('Wellness')">+ Daily Wellness</button>
+            </div>
+          </div>
+
+          <!-- AYUSH Recommendations Container -->
+          <div id="ayushRecommendations" class="ayush-recommendations hidden" style="margin-top: 16px;">
+            <h4 data-i18n="ayushRecommendations">AYUSH Recommendations</h4>
+            <div id="ayushContent"></div>
+          </div>
+
+          <!-- Practitioner Consultation Request -->
+          <div class="ayush-consultation" style="margin-top: 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+              <label class="check" style="margin: 0;">
+                <input type="checkbox" id="ayushConsultation" checked>
+                <span data-i18n="ayushConsultationRequest">Request AYUSH Practitioner Consultation</span>
+              </label>
+              <button type="button" class="primary" style="padding: 8px 16px; font-size: 13px;" onclick="bookAyushConsultation()">
+                Book Consultation
+              </button>
+            </div>
+          </div>
+
+          <!-- Verified Facilities List with Call and Directions -->
+          <div style="margin-top: 20px;">
+            <h4 style="margin: 0 0 10px 0; color: #1e293b;">Verified AYUSH Centers Nearby</h4>
+            <div class="healthcare-list">
+              <div class="healthcare-item">
+                <div class="healthcare-header">
+                  <h3>National Institute of Ayurveda & AYUSH Dispensary</h3>
+                  <span class="distance">1.5 km away</span>
+                </div>
+                <div class="healthcare-status">
+                  <span class="status-badge open">Open</span>
+                  <span class="status-badge">Govt. AYUSH Centre</span>
+                </div>
+                <p class="muted">📍 Civil Lines, AYUSH Block</p>
+                <p class="muted">📞 14443 / +91-11-2345-6789</p>
+                <div class="healthcare-actions">
+                  <button type="button" class="secondary" onclick="makePhoneCall('14443')">📞 Call</button>
+                  <button type="button" class="secondary" onclick="openGoogleMaps('National Institute of Ayurveda')">🗺️ Directions</button>
+                </div>
+              </div>
+
+              <div class="healthcare-item">
+                <div class="healthcare-header">
+                  <h3>Central Council for Research in Homeopathy & Siddha</h3>
+                  <span class="distance">3.2 km away</span>
+                </div>
+                <div class="healthcare-status">
+                  <span class="status-badge open">Open</span>
+                  <span class="status-badge">AYUSH Research Clinic</span>
+                </div>
+                <p class="muted">📍 Institutional Area, Sector 5</p>
+                <p class="muted">📞 +91-11-9876-5432</p>
+                <div class="healthcare-actions">
+                  <button type="button" class="secondary" onclick="makePhoneCall('+91-11-9876-5432')">📞 Call</button>
+                  <button type="button" class="secondary" onclick="openGoogleMaps('Central Council for Research in Homeopathy')">🗺️ Directions</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+
+
+      <!-- ================= DONE ================= -->
+      <section id="done" class="screen">
+
+        <div class="done card">
+
+          <div class="success-icon">
+            ✓
+          </div>
+
+          <h2>
+            Information Shared Successfully
+          </h2>
+
+          <p>
+            Your structured summary is ready for
+            healthcare-professional review.
+          </p>
+
+
+          <div class="done-grid">
+
+            <div>
+              <b>📝</b>
+              <span>Audit Log</span>
+              <small>Access event recorded</small>
+            </div>
+
+            <div>
+              <b>🔐</b>
+              <span>Consent</span>
+              <small>Recorded for this demo</small>
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="primary big"
+            onclick="newSession()"
+          >
+            Start New Session
+          </button>
+
+        </div>
+
+      </section>
+
+
+
+      <!-- ================= DASHBOARD ================= -->
+      <section id="dashboard" class="screen">
+
+        <div class="section-head">
+
+          <button
+            type="button"
+            class="back"
+            onclick="showScreen('welcome')"
+          >
+            ← Home
+          </button>
+
+          <div>
+
+            <span class="eyebrow">
+              CLINICAL VIEW
+            </span>
+
+            <h2>
+              Doctor Dashboard
+            </h2>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="secondary"
+            onclick="showAnalytics()"
+          >
+            📈 Analytics
+          </button>
+
+        </div>
+
+
+        <!-- Stats -->
+        <div class="stats-grid">
+
+          <div class="stat card">
+            <span>Waiting</span>
+            <b id="waitingCount">08</b>
+            <small>Patients</small>
+          </div>
+
+          <div class="stat card">
+            <span>High Priority</span>
+            <b id="highCount">02</b>
+            <small>Needs attention</small>
+          </div>
+
+          <div class="stat card">
+            <span>Avg. Intake</span>
+            <b>04:32</b>
+            <small>Minutes</small>
+          </div>
+
+          <div class="stat card">
+            <span>Offline Queue</span>
+            <b id="offlineCount">00</b>
+            <small>Sync pending</small>
+          </div>
+
+        </div>
+
+
+        <!-- Patient Queue -->
+        <div class="card table-card">
+
+          <div class="table-head">
+
+            <h3>
+              Patient Queue
+            </h3>
+
+            <button
+              type="button"
+              class="secondary"
+              onclick="simulateAlert()"
+            >
+              🚨 Test Alert
+            </button>
+
+          </div>
+
+
+          <div class="table-wrap">
+
+            <table>
+
+              <thead>
+
+                <tr>
+                  <th>Patient</th>
+                  <th>Priority</th>
+                  <th>Symptoms</th>
+                  <th>Mode</th>
+                  <th>Action</th>
+                </tr>
+
+              </thead>
+
+              <tbody id="queueBody"></tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+
+        <!-- Integrations -->
+        <div class="integration-grid">
+
+
+          <div class="card">
+
+            <h3>
+              🔄 FHIR / HL7 Integration
+            </h3>
+
+            <p class="muted">
+              Prototype adapter status
+            </p>
+
+
+            <div class="metric">
+              <span>FHIR Server</span>
+              <b class="ok">Connected</b>
+            </div>
+
+            <div class="metric">
+              <span>HL7 Interface</span>
+              <b class="ok">Ready</b>
+            </div>
+
+            <div class="metric">
+              <span>ERP/HIS Sync</span>
+              <b id="erpStatus">Idle</b>
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <h3>
+              📝 Recent Audit Log
+            </h3>
+
+            <div
+              id="auditLog"
+              class="audit"
+            ></div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+
+      <!-- ================= ANALYTICS ================= -->
+      <section id="analytics" class="screen">
+
+        <div class="section-head">
+
+          <button
+            type="button"
+            class="back"
+            onclick="showScreen('dashboard')"
+          >
+            ← Dashboard
+          </button>
+
+          <div>
+
+            <span class="eyebrow">
+              MANAGEMENT
+            </span>
+
+            <h2>
+              Hospital Analytics
+            </h2>
+
+          </div>
+
+        </div>
+
+
+        <div class="analytics-grid">
+
+
+          <div class="card">
+
+            <h3>
+              📊 Patient Volume
+            </h3>
+
+            <div class="bars">
+
+              <i style="height:45%"></i>
+              <i style="height:65%"></i>
+              <i style="height:55%"></i>
+              <i style="height:80%"></i>
+              <i style="height:70%"></i>
+              <i style="height:95%"></i>
+              <i style="height:76%"></i>
+
+            </div>
+
+            <div class="days">
+
+              <span>Mon</span>
+              <span>Tue</span>
+              <span>Wed</span>
+              <span>Thu</span>
+              <span>Fri</span>
+              <span>Sat</span>
+              <span>Sun</span>
+
+            </div>
+
+          </div>
+
+
+
+          <div class="card">
+
+            <h3>
+              ⏱️ Waiting Time
+            </h3>
+
+            <div class="big-number">
+              12.4 <small>min</small>
+            </div>
+
+            <p class="muted">
+              Average estimated queue time
+            </p>
+
+          </div>
+
+
+
+          <div class="card">
+
+            <h3>
+              🩺 Common Complaints
+            </h3>
+
+            <div class="complaint">
+              <span>Fever</span>
+              <b>31%</b>
+            </div>
+
+            <div class="complaint">
+              <span>Cough</span>
+              <b>24%</b>
+            </div>
+
+            <div class="complaint">
+              <span>Headache</span>
+              <b>18%</b>
+            </div>
+
+            <div class="complaint">
+              <span>Other</span>
+              <b>27%</b>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ================= ADMIN DASHBOARD (BACKEND / DEVELOPER) ================= -->
+      <section id="adminDashboardScreen" class="screen admin-dashboard-screen">
+        <div class="admin-dashboard-container">
+          
+          <!-- Top Header Bar for Admin -->
+          <div class="admin-top-header">
+            <div class="admin-top-branding">
+              <div class="admin-badge-icon">🛡️</div>
+              <div>
+                <h2>Hospital Admin &amp; Developer Portal</h2>
+                <p class="admin-top-subtitle">Real-time Clinical Administration · MediKiosk Core Engine</p>
+              </div>
+            </div>
+            <div class="admin-top-session">
+              <div class="admin-session-pill">
+                <span class="live-dot">●</span>
+                <span>Active: <strong>Developer (admin)</strong></span>
+              </div>
+              <button type="button" class="exit-admin-btn" onclick="exitAdminDashboard()">
+                🚪 Exit to Kiosk
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Layout: Sidebar Menu + Content Panels -->
+          <div class="admin-layout">
+            
+            <!-- Left Sidebar Navigation Menu -->
+            <aside class="admin-sidebar">
+              <div class="admin-sidebar-title">NAVIGATION MENU</div>
+              <nav class="admin-nav">
+                <!-- 1st Menu: Patient List -->
+                <button type="button" class="admin-nav-item active" id="adminNavPatients" onclick="switchAdminTab('patients')">
+                  <span class="nav-icon">👥</span>
+                  <span class="nav-label">Patient List</span>
+                  <span class="nav-count" id="adminPatientCountBadge">0</span>
+                </button>
+
+                <!-- 2nd Menu: Doctor List (Who doctor is login in to the app) -->
+                <button type="button" class="admin-nav-item" id="adminNavDoctorList" onclick="switchAdminTab('doctorList')">
+                  <span class="nav-icon">👨‍⚕️</span>
+                  <span class="nav-label">Doctor List</span>
+                  <span class="nav-count badge-info" id="adminDoctorOnlineBadge">0</span>
+                </button>
+
+                <!-- 3rd Menu: Doctors Approval -->
+                <button type="button" class="admin-nav-item" id="adminNavDoctorApprovals" onclick="switchAdminTab('doctorApprovals')">
+                  <span class="nav-icon">📋</span>
+                  <span class="nav-label">Doctors Approval</span>
+                  <span class="nav-count badge-warning" id="adminDoctorApprovalBadge">0</span>
+                </button>
+
+                <!-- 4th Menu: Billing Part -->
+                <button type="button" class="admin-nav-item" id="adminNavBilling" onclick="switchAdminTab('billing')">
+                  <span class="nav-icon">💳</span>
+                  <span class="nav-label">Billing Part</span>
+                  <span class="nav-count" id="adminBillingCountBadge">0</span>
+                </button>
+
+                <!-- 5th Menu: Report / Problem Part -->
+                <button type="button" class="admin-nav-item" id="adminNavProblems" onclick="switchAdminTab('problems')">
+                  <span class="nav-icon">⚠️</span>
+                  <span class="nav-label">Report / Problem</span>
+                  <span class="nav-count badge-warning" id="adminProblemCountBadge">0</span>
+                </button>
+              </nav>
+
+              <div class="admin-sidebar-footer">
+                <div class="admin-sys-info">
+                  <small>System: <b>v2.6-dev</b></small><br>
+                  <small>FHIR/HL7: <span class="text-success">Connected</span></small>
+                </div>
+                <button type="button" class="admin-signout-btn" onclick="exitAdminDashboard()">
+                  Sign Out
+                </button>
+              </div>
+            </aside>
+
+            <!-- Right Content Panels Area -->
+            <div class="admin-main-panel">
+              
+              <!-- TAB 1: PATIENT LIST (WITH UPDATE OR DELETE BUTTON) -->
+              <div id="adminTabPatients" class="admin-tab-panel active">
+                <div class="panel-header">
+                  <div>
+                    <h3>👥 Registered Patient Directory</h3>
+                    <p class="muted">Manage registered hospital patients. Update demographics, medical records, or delete patient entries.</p>
+                  </div>
+                  <div class="panel-actions">
+                    <input type="search" id="adminPatientSearch" class="admin-search-input" placeholder="🔍 Search patient by name, ID, phone..." oninput="filterAdminPatients(this.value)">
+                    <button type="button" class="primary" onclick="openAddPatientModal()">+ Add New Patient</button>
+                  </div>
+                </div>
+
+                <div class="admin-table-wrapper">
+                  <table class="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Patient ID</th>
+                        <th>Name</th>
+                        <th>Age / Gender</th>
+                        <th>Phone</th>
+                        <th>Symptoms / Chief Complaint</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminPatientTableBody">
+                      <!-- Rendered dynamically with Update & Delete buttons -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- TAB 2: DOCTOR LIST (WHO DOCTOR IS LOGIN IN TO THE APP) -->
+              <div id="adminTabDoctorList" class="admin-tab-panel">
+                <div class="panel-header">
+                  <div>
+                    <h3>👨‍⚕️ Registered Doctors List &amp; Credentials</h3>
+                    <p class="muted">Exclusively shows doctors who registered their Doctor ID and Password in the hospital portal. Mock/unregistered accounts are excluded.</p>
+                  </div>
+                  <div class="panel-actions">
+                    <input type="search" id="adminDoctorSearch" class="admin-search-input" placeholder="🔍 Search by Doctor ID, name, password, specialty..." oninput="filterAdminDoctors(this.value)">
+                    <button type="button" class="secondary" onclick="renderAdminDoctorList()">🔄 Refresh List</button>
+                  </div>
+                </div>
+
+                <!-- Doctor KPI Summary Row -->
+                <div class="stats-grid" style="margin-bottom: 20px;">
+                  <div class="stat card">
+                    <span>Active In App</span>
+                    <b id="adminDoctorsOnlineCount" style="color: #16a34a;">0</b>
+                    <small>Doctors Logged In</small>
+                  </div>
+                  <div class="stat card">
+                    <span>Registered Doctors</span>
+                    <b id="adminDoctorsTotalCount" style="color: #0f172a;">0</b>
+                    <small>With ID &amp; Password</small>
+                  </div>
+                  <div class="stat card">
+                    <span>Approved Practice</span>
+                    <b id="adminDoctorsApprovedCount" style="color: #2563eb;">0</b>
+                    <small>Admin Approved</small>
+                  </div>
+                  <div class="stat card">
+                    <span>Pending Approvals</span>
+                    <b id="adminDoctorsPendingCount" style="color: #d97706;">0</b>
+                    <small>Awaiting Verification</small>
+                  </div>
+                </div>
+
+                <!-- Doctor Table -->
+                <div class="admin-table-wrapper">
+                  <table class="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Doctor Details</th>
+                        <th>Registered ID &amp; Password</th>
+                        <th>Specialty / Dept</th>
+                        <th>Cabin / Location</th>
+                        <th>Approval Status</th>
+                        <th>App Login Status</th>
+                        <th>Registered At</th>
+                        <th style="text-align: right;">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminDoctorTableBody">
+                      <!-- Rendered dynamically -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- TAB 3: DOCTORS APPROVAL -->
+              <div id="adminTabDoctorApprovals" class="admin-tab-panel">
+                <div class="panel-header">
+                  <div>
+                    <h3>📋 Doctors Credential &amp; Licensing Approvals</h3>
+                    <p class="muted">Review medical credentials, license numbers, and grant practice approvals for doctors on the MediKiosk network.</p>
+                  </div>
+                  <div class="panel-filter-pills">
+                    <button type="button" class="filter-pill active" onclick="filterDoctorApprovals('all', this)">All Applications</button>
+                    <button type="button" class="filter-pill" onclick="filterDoctorApprovals('pending', this)">Pending Review</button>
+                    <button type="button" class="filter-pill" onclick="filterDoctorApprovals('approved', this)">Approved</button>
+                    <button type="button" class="filter-pill" onclick="filterDoctorApprovals('rejected', this)">Rejected</button>
+                  </div>
+                </div>
+
+                <div id="adminDoctorApprovalsContainer" class="approvals-grid">
+                  <!-- Rendered dynamically -->
+                </div>
+              </div>
+
+              <!-- TAB 4: BILLING PART -->
+              <div id="adminTabBilling" class="admin-tab-panel">
+                <div class="panel-header">
+                  <div>
+                    <h3>💳 Hospital Kiosk Billing &amp; Invoices</h3>
+                    <p class="muted">Real-time ledger of kiosk consultation fees, triage billing, diagnostic payments, and Ayushman Bharat / Insurance settlements.</p>
+                  </div>
+                  <div class="panel-actions">
+                    <button type="button" class="primary" onclick="openNewBillModal()">+ Create Manual Invoice</button>
+                    <button type="button" class="secondary" onclick="exportBillingLedger()">📥 Export CSV</button>
+                  </div>
+                </div>
+
+                <!-- Billing Stats KPIs -->
+                <div class="stats-grid" style="margin-bottom: 20px;">
+                  <div class="stat card">
+                    <span>Total Billing Today</span>
+                    <b id="billingTotalAmount" style="color: #16a34a;">₹18,750</b>
+                    <small>Gross revenue</small>
+                  </div>
+                  <div class="stat card">
+                    <span>Settled Invoices</span>
+                    <b id="billingPaidCount" style="color: #0284c7;">15</b>
+                    <small>Paid In Full</small>
+                  </div>
+                  <div class="stat card">
+                    <span>Pending Dues</span>
+                    <b id="billingPendingAmount" style="color: #ea580c;">₹1,450</b>
+                    <small>Awaiting Cashier</small>
+                  </div>
+                  <div class="stat card">
+                    <span>PM-JAY / Cashless</span>
+                    <b id="billingInsuranceCount" style="color: #7c3aed;">6</b>
+                    <small>Insurance Verified</small>
+                  </div>
+                </div>
+
+                <!-- Invoices Table -->
+                <div class="admin-table-wrapper">
+                  <table class="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Invoice #</th>
+                        <th>Date &amp; Time</th>
+                        <th>Patient Details</th>
+                        <th>Service / Department</th>
+                        <th>Amount (₹)</th>
+                        <th>Payment Mode</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminBillingTableBody">
+                      <!-- Rendered dynamically -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- TAB 5: REPORT / PROBLEM PART -->
+              <div id="adminTabProblems" class="admin-tab-panel">
+                <div class="panel-header">
+                  <div>
+                    <h3>⚠️ User Problem &amp; Incident Reports</h3>
+                    <p class="muted">Live log of issues, feedback, and hardware/triage complaints submitted by patients at the kiosk. Stored for administrative action.</p>
+                  </div>
+                  <div class="panel-actions">
+                    <button type="button" class="secondary" onclick="renderAdminProblems()">🔄 Refresh Tickets</button>
+                    <button type="button" class="secondary" onclick="exportProblemReports()">📥 Export Tickets</button>
+                  </div>
+                </div>
+
+                <!-- Problems Filter & Metrics -->
+                <div class="consultation-metrics-row" style="margin-bottom: 16px;">
+                  <div class="consult-stat-card">
+                    <span class="consult-stat-num" id="problemOpenCount" style="color: #ea580c;">0</span>
+                    <span class="consult-stat-lbl">Open / Needs Attention</span>
+                  </div>
+                  <div class="consult-stat-card">
+                    <span class="consult-stat-num" id="problemProgressCount" style="color: #0284c7;">0</span>
+                    <span class="consult-stat-lbl">In Investigation</span>
+                  </div>
+                  <div class="consult-stat-card">
+                    <span class="consult-stat-num" id="problemResolvedCount" style="color: #16a34a;">0</span>
+                    <span class="consult-stat-lbl">Resolved Today</span>
+                  </div>
+                </div>
+
+                <!-- Problems List Table -->
+                <div class="admin-table-wrapper">
+                  <table class="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Ticket ID</th>
+                        <th>Reported At</th>
+                        <th>Patient / User</th>
+                        <th>Problem Category</th>
+                        <th>Priority</th>
+                        <th>Description / Problem Details</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminProblemsTableBody">
+                      <!-- Rendered dynamically from user problem submissions -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================= CLINICAL DOCTOR PORTAL ================= -->
+      <section id="doctorDashboardScreen" class="screen doctor-dashboard-screen">
+        <div class="doctor-dashboard-container">
+          
+          <!-- Top Header Bar for Doctor -->
+          <div class="doctor-top-header">
+            <div class="doctor-top-branding">
+              <div class="doctor-badge-icon">🩺</div>
+              <div>
+                <h2>Clinical Doctor Portal</h2>
+                <p class="doctor-top-subtitle">Physician Workstation · Patient Queue &amp; Digital Consultations</p>
+              </div>
+            </div>
+            <div class="doctor-top-session">
+              <div class="doctor-session-pill">
+                <span class="live-dot doctor-dot" id="doctorStatusDot">●</span>
+                <span id="doctorActiveHeaderLabel">Doctor: <strong>Not Signed In</strong></span>
+              </div>
+              <select id="doctorOnlineStatusSelect" class="doctor-status-select" onchange="changeDoctorStatus(this.value)">
+                <option value="online">🟢 Online (Accepting Patients)</option>
+                <option value="break">🟡 On Break / Away</option>
+                <option value="offline">⚪ Offline</option>
+              </select>
+              <button type="button" class="exit-admin-btn" onclick="exitDoctorPortal()">
+                🚪 Exit to Kiosk
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Layout: Sidebar Menu + Content Panels -->
+          <div class="doctor-layout">
+            
+            <!-- Left Sidebar Navigation Menu for Doctor -->
+            <aside class="doctor-sidebar">
+              <div class="doctor-sidebar-title">CLINICAL WORKSTATION</div>
+              <nav class="doctor-nav">
+                <!-- 1st Menu: Doctor Dashboard -->
+                <button type="button" class="doctor-nav-item active" id="docNavDashboard" onclick="switchDoctorTab('dashboard')">
+                  <span class="nav-icon">👨‍⚕️</span>
+                  <span class="nav-label">Doctor Dashboard</span>
+                  <span class="nav-count" id="docQueueCountBadge">0</span>
+                </button>
+
+                <!-- 2nd Menu: Active Consultation -->
+                <button type="button" class="doctor-nav-item" id="docNavConsultations" onclick="switchDoctorTab('consultations')">
+                  <span class="nav-icon">🩺</span>
+                  <span class="nav-label">Active Consultation</span>
+                  <span class="nav-count badge-info" id="docConsultCountBadge">0</span>
+                </button>
+
+                <!-- 3rd Menu: Analysis -->
+                <button type="button" class="doctor-nav-item" id="docNavAnalysis" onclick="switchDoctorTab('analysis')">
+                  <span class="nav-icon">📈</span>
+                  <span class="nav-label">Analysis</span>
+                </button>
+              </nav>
+
+              <div class="doctor-sidebar-footer">
+                <div class="doctor-sys-info">
+                  <small id="docCabinInfo">Cabin: <b>Unassigned</b></small><br>
+                  <small>EMR Sync: <span class="text-success">Connected</span></small>
+                </div>
+                <button type="button" class="admin-signout-btn" onclick="exitDoctorPortal()">
+                  🚪 Sign Out
+                </button>
+              </div>
+            </aside>
+
+            <!-- Right Content Panels Area for Doctor -->
+            <div class="doctor-main-panel">
+              
+              <!-- DOCTOR TAB 1: DOCTOR DASHBOARD -->
+              <div id="docTabDashboard" class="doctor-tab-panel active">
+                <div class="panel-header">
+                  <div>
+                    <h3>👨‍⚕️ Clinical Intake Queue &amp; Department Overview</h3>
+                    <p class="muted">Live patient triage queue, urgent red-flag alerts, and incoming consultations.</p>
+                  </div>
+                  <div class="panel-actions">
+                    <button type="button" class="secondary" onclick="simulateAlert()">🚨 Test Alert</button>
+                    <button type="button" class="secondary" onclick="switchDoctorTab('analysis')">📈 Clinical Analysis</button>
+                  </div>
+                </div>
+
+                <!-- Stats Summary -->
+                <div class="stats-grid" style="margin-bottom: 20px;">
+                  <div class="stat card">
+                    <span>Waiting in Queue</span>
+                    <b id="docWaitingCount">08</b>
+                    <small>Patients</small>
+                  </div>
+                  <div class="stat card">
+                    <span>High Priority / Red Flag</span>
+                    <b id="docHighCount" style="color: #dc2626;">02</b>
+                    <small>Needs immediate attention</small>
+                  </div>
+                  <div class="stat card">
+                    <span>Avg. Intake Time</span>
+                    <b>04:32</b>
+                    <small>Minutes</small>
+                  </div>
+                  <div class="stat card">
+                    <span>FHIR / HIS Status</span>
+                    <b style="color: #16a34a;">Online</b>
+                    <small>Real-time sync</small>
+                  </div>
+                </div>
+
+                <!-- Doctor Patient Queue -->
+                <div class="card table-card" style="margin-bottom: 20px;">
+                  <div class="table-head">
+                    <h3 style="margin: 0;">🏥 Live Doctor Intake Queue</h3>
+                    <span class="queue-badge" id="docQueuePill">Live sync active</span>
+                  </div>
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Patient</th>
+                          <th>Priority</th>
+                          <th>Symptoms</th>
+                          <th>Intake Mode</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody id="docQueueBody">
+                        <!-- Populated dynamically -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Doctor Encounter Frequency Filter (Week & Months) -->
+                <div class="card doctor-frequency-card">
+                  <div class="frequency-header">
+                    <div>
+                      <h3>👨‍⚕️ Doctor Consultations &amp; Patient Encounters</h3>
+                      <p class="muted" style="margin: 3px 0 0; font-size: 13px;">Review how many doctors have seen the patient in this week and months.</p>
+                    </div>
+                    <div class="frequency-filter-pills">
+                      <button type="button" class="freq-pill-btn active" id="docFreqWeekBtn" onclick="filterDoctorEncounters('week')">📅 This Week</button>
+                      <button type="button" class="freq-pill-btn" id="docFreqMonthBtn" onclick="filterDoctorEncounters('month')">📆 This Month</button>
+                    </div>
+                  </div>
+
+                  <!-- Key Performance Metrics Row -->
+                  <div class="frequency-metrics-grid">
+                    <div class="freq-stat-box">
+                      <span class="freq-stat-num" id="docFreqDoctorCount">4</span>
+                      <span class="freq-stat-lbl">Doctors Seen Patients</span>
+                      <span class="freq-stat-sub" id="docFreqDoctorSub">Unique attending physicians</span>
+                    </div>
+                    <div class="freq-stat-box">
+                      <span class="freq-stat-num" id="docFreqEncounterCount">7</span>
+                      <span class="freq-stat-lbl">Patient Encounters</span>
+                      <span class="freq-stat-sub" id="docFreqEncounterSub">Consultations completed</span>
+                    </div>
+                    <div class="freq-stat-box">
+                      <span class="freq-stat-num" id="docFreqSpecialtyCount">4</span>
+                      <span class="freq-stat-lbl">Specialties Involved</span>
+                      <span class="freq-stat-sub" id="docFreqSpecialtySub">Departments consulted</span>
+                    </div>
+                  </div>
+
+                  <!-- Encounters List -->
+                  <div class="frequency-list-wrapper">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                      <span style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Doctors Who Consulted Patients (<span id="docFreqPeriodLabel" style="color: #2563eb;">This Week</span>)
+                      </span>
+                      <span class="badge online" id="docFreqBadge">● Filtered View</span>
+                    </div>
+                    <div id="docFreqList" class="frequency-encounters-list">
+                      <!-- Rendered dynamically -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DOCTOR TAB 2: ANALYSIS -->
+              <div id="docTabAnalysis" class="doctor-tab-panel">
+                <div class="panel-header">
+                  <div>
+                    <h3>📈 Clinical Analysis &amp; Patient Volume</h3>
+                    <p class="muted">Live patient volume patterns, queue wait-time metrics, triage breakdown, and symptom analysis.</p>
+                  </div>
+                  <div class="panel-actions">
+                    <button type="button" class="secondary" onclick="renderDoctorAnalysis()">🔄 Refresh Data</button>
+                    <button type="button" class="secondary" onclick="exportAnalyticsReport()">📥 Export Report</button>
+                  </div>
+                </div>
+
+                <!-- KPI Summary Row -->
+                <div class="admin-analytics-kpis" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
+                  <div class="stat card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 18px;">
+                    <span style="font-size: 12px; color: #64748b;">Total Registered Patients</span>
+                    <b id="docAnalyticsTotalPatients" style="font-size: 26px; color: #0f172a; margin: 4px 0; display: block;">0</b>
+                    <small style="color: #16a34a; font-weight: 600;">Active in directory</small>
+                  </div>
+                  <div class="stat card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 18px;">
+                    <span style="font-size: 12px; color: #64748b;">Waiting in Queue</span>
+                    <b id="docAnalyticsWaitingQueue" style="font-size: 26px; color: #0284c7; margin: 4px 0; display: block;">0</b>
+                    <small style="color: #64748b;">Current triage queue</small>
+                  </div>
+                  <div class="stat card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 18px;">
+                    <span style="font-size: 12px; color: #64748b;">Average Intake Time</span>
+                    <b style="font-size: 26px; color: #16a34a; margin: 4px 0; display: block;">04:32</b>
+                    <small style="color: #16a34a; font-weight: 600;">Optimal throughput</small>
+                  </div>
+                  <div class="stat card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 18px;">
+                    <span style="font-size: 12px; color: #64748b;">Safety Rules Engine</span>
+                    <b style="font-size: 26px; color: #7c3aed; margin: 4px 0; display: block;">100%</b>
+                    <small style="color: #7c3aed; font-weight: 600;">Pre-AI red flags checked</small>
+                  </div>
+                </div>
+
+                <div class="analytics-grid">
+                  <!-- Patient Volume Card -->
+                  <div class="card" style="border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <h4 style="margin: 0; font-size: 16px;">📊 Weekly Patient Volume</h4>
+                      <span class="nav-count" id="docAnalyticsWeeklyTotal" style="background: #e0e7ff; color: #3730a3;">142 total</span>
+                    </div>
+                    <p class="muted" style="font-size: 12px; margin: 4px 0 16px;">Daily patient footfall across hospital departments</p>
+                    <div class="bars" style="height: 160px;">
+                      <i style="height:45%" title="Mon: 18"></i>
+                      <i style="height:65%" title="Tue: 26"></i>
+                      <i style="height:55%" title="Wed: 22"></i>
+                      <i style="height:80%" title="Thu: 32"></i>
+                      <i style="height:70%" title="Fri: 28"></i>
+                      <i style="height:95%" title="Sat: 38"></i>
+                      <i style="height:76%" title="Sun: 30"></i>
+                    </div>
+                    <div class="days" style="margin-top: 8px;">
+                      <span>Mon</span>
+                      <span>Tue</span>
+                      <span>Wed</span>
+                      <span>Thu</span>
+                      <span>Fri</span>
+                      <span>Sat</span>
+                      <span>Sun</span>
+                    </div>
+                  </div>
+
+                  <!-- Waiting Time Card -->
+                  <div class="card" style="border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px;">
+                    <h4 style="margin: 0; font-size: 16px;">⏱️ Triage &amp; Queue Wait Time</h4>
+                    <p class="muted" style="font-size: 12px; margin: 4px 0 16px;">Average patient flow duration</p>
+                    <div class="big-number" style="margin: 15px 0 5px; color: #0284c7;">
+                      12.4 <small style="font-size: 18px; color: #64748b;">min</small>
+                    </div>
+                    <p class="muted" style="margin-bottom: 16px;">Average estimated queue-to-doctor time</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;">
+                      <div style="background: #f8fafc; padding: 10px 12px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                        <span style="font-size: 11px; color: #64748b; display: block;">⚡ Fast Track (Low)</span>
+                        <b style="font-size: 16px; color: #16a34a;">06.2 min</b>
+                      </div>
+                      <div style="background: #fef2f2; padding: 10px 12px; border-radius: 10px; border: 1px solid #fecaca;">
+                        <span style="font-size: 11px; color: #b91c1c; display: block;">🚨 Red Flag (Urgent)</span>
+                        <b style="font-size: 16px; color: #dc2626;">Immediate (&lt;1m)</b>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Common Complaints Card -->
+                  <div class="card" style="border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px;">
+                    <h4 style="margin: 0; font-size: 16px;">🩺 Common Clinical Complaints</h4>
+                    <p class="muted" style="font-size: 12px; margin: 4px 0 16px;">Most frequent symptoms reported at kiosk</p>
+                    <div class="complaint">
+                      <span>🌡️ Fever &amp; Chills</span>
+                      <b style="color: #ea580c;">31%</b>
+                    </div>
+                    <div class="complaint">
+                      <span>😮‍💨 Cough &amp; Sore Throat</span>
+                      <b style="color: #0284c7;">24%</b>
+                    </div>
+                    <div class="complaint">
+                      <span>🤕 Headache &amp; Fatigue</span>
+                      <b style="color: #7c3aed;">18%</b>
+                    </div>
+                    <div class="complaint" style="border-bottom: none;">
+                      <span>🩹 Other Complaints</span>
+                      <b style="color: #64748b;">27%</b>
+                    </div>
+                  </div>
+
+                  <!-- Triage Priority Distribution Card -->
+                  <div class="card" style="border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px;">
+                    <h4 style="margin: 0; font-size: 16px;">🎯 Clinical Triage Distribution</h4>
+                    <p class="muted" style="font-size: 12px; margin: 4px 0 16px;">Severity triage categorization</p>
+                    <div style="margin-bottom: 12px;">
+                      <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                        <span>🔴 High Priority / Red Flag</span>
+                        <b id="docAnalyticsHighPct" style="color: #dc2626;">15%</b>
+                      </div>
+                      <div style="height: 8px; border-radius: 4px; background: #fee2e2; overflow: hidden;">
+                        <div id="docAnalyticsHighBar" style="width: 15%; height: 100%; background: #dc2626; border-radius: 4px;"></div>
+                      </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                      <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                        <span>🟡 Medium Priority / Standard</span>
+                        <b id="docAnalyticsMedPct" style="color: #d97706;">55%</b>
+                      </div>
+                      <div style="height: 8px; border-radius: 4px; background: #fef3c7; overflow: hidden;">
+                        <div id="docAnalyticsMedBar" style="width: 55%; height: 100%; background: #d97706; border-radius: 4px;"></div>
+                      </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                      <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                        <span>🟢 Low Priority / Routine</span>
+                        <b id="docAnalyticsLowPct" style="color: #16a34a;">30%</b>
+                      </div>
+                      <div style="height: 8px; border-radius: 4px; background: #dcfce7; overflow: hidden;">
+                        <div id="docAnalyticsLowBar" style="width: 30%; height: 100%; background: #16a34a; border-radius: 4px;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DOCTOR TAB 3: ACTIVE CONSULTATION -->
+              <div id="docTabConsultations" class="doctor-tab-panel">
+                <div class="panel-header">
+                  <div>
+                    <h3>🩺 Active Consultation</h3>
+                    <p class="muted">Live active consultation &amp; patient clinical details for the signed-in physician.</p>
+                  </div>
+                  <div class="panel-actions">
+                    <button type="button" class="secondary" onclick="switchDoctorTab('dashboard')">📋 View Intake Queue</button>
+                  </div>
+                </div>
+
+                <!-- Active Consultation Patient Details Card -->
+                <div class="card hidden" id="docCurrentConsultationCard" style="margin-bottom: 20px; border: 1.5px solid #bbf7d0; background: #f0fdf4; border-radius: 16px; padding: 20px;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                      <span class="eyebrow" style="color: #166534;">CURRENT ACTIVE PATIENT IN CABIN</span>
+                      <h3 id="docActivePatientName" style="margin: 4px 0; font-size: 22px; color: #14532d; font-weight: 800;">No Patient</h3>
+                      <p style="margin: 0; font-size: 13.5px; color: #166534;" id="docActivePatientMeta">Patient ID: <strong>—</strong> · Cabin: —</p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span class="consultation-status-pill consult-status-in" id="docActivePatientStatus">🟢 In Consultation</span>
+                    </div>
+                  </div>
+
+                  <!-- In-depth Patient Details Grid -->
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 16px;">
+                    <div style="background: #ffffff; padding: 12px 14px; border-radius: 10px; border: 1px solid #dcfce7;">
+                      <span style="font-size: 11px; color: #64748b; display: block; text-transform: uppercase; font-weight: 700;">Chief Complaint / Symptoms:</span>
+                      <strong id="docActivePatientSymptoms" style="color: #0f172a; font-size: 13.5px; display: block; margin-top: 2px;">—</strong>
+                    </div>
+                    <div style="background: #ffffff; padding: 12px 14px; border-radius: 10px; border: 1px solid #dcfce7;">
+                      <span style="font-size: 11px; color: #64748b; display: block; text-transform: uppercase; font-weight: 700;">Recorded Vital Signs:</span>
+                      <strong id="docActivePatientVitals" style="color: #0f172a; font-size: 13.5px; display: block; margin-top: 2px;">—</strong>
+                    </div>
+                    <div style="background: #ffffff; padding: 12px 14px; border-radius: 10px; border: 1px solid #dcfce7;">
+                      <span style="font-size: 11px; color: #64748b; display: block; text-transform: uppercase; font-weight: 700;">Triage Priority &amp; Mode:</span>
+                      <strong id="docActivePatientPriority" style="color: #0f172a; font-size: 13.5px; display: block; margin-top: 2px;">—</strong>
+                    </div>
+                    <div style="background: #ffffff; padding: 12px 14px; border-radius: 10px; border: 1px solid #dcfce7;">
+                      <span style="font-size: 11px; color: #64748b; display: block; text-transform: uppercase; font-weight: 700;">Known Allergies &amp; Meds:</span>
+                      <strong id="docActivePatientMeds" style="color: #0f172a; font-size: 13.5px; display: block; margin-top: 2px;">—</strong>
+                    </div>
+                  </div>
+
+                  <!-- Signed-In Doctor Cabin Assignment Tag -->
+                  <div style="margin-top: 14px; background: rgba(255,255,255,0.75); padding: 10px 14px; border-radius: 10px; border: 1px dashed #86efac; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <div style="font-size: 13px; color: #166534;">
+                      <span>Attending Doctor: </span>
+                      <strong id="docActiveAttendingDoc">Not Assigned</strong> · <span id="docActiveCabinLabel">Cabin</span>
+                    </div>
+                    <span style="font-size: 12px; color: #15803d; font-weight: 700;">Active Consultation View (Signed-in Doctor Only)</span>
+                  </div>
+                </div>
+
+                <!-- Empty State when no active consultation is in progress -->
+                <div class="card" id="docNoActiveConsultationNotice" style="margin-bottom: 20px; border: 1.5px dashed #cbd5e1; background: #f8fafc; border-radius: 16px; padding: 32px; text-align: center;">
+                  <div style="font-size: 36px; margin-bottom: 8px;">🩺</div>
+                  <h4 style="margin: 0 0 6px; color: #1e293b; font-size: 17px;">No Active Patient in Cabin</h4>
+                  <p style="margin: 0 auto; max-width: 480px; color: #64748b; font-size: 13.5px;">You currently do not have a patient in active consultation. Head to the <strong>Intake Queue</strong> tab and click <strong>"🩺 Take Case"</strong> on any waiting patient to begin consulting.</p>
+                  <button type="button" class="primary" onclick="switchDoctorTab('dashboard')" style="margin-top: 14px; padding: 8px 18px; font-weight: 700; border-radius: 10px;">
+                    ➔ Go to Intake Queue
+                  </button>
+                </div>
+
+                <!-- Consultation Metrics -->
+                <div class="consultation-metrics-row">
+                  <div class="consult-stat-card">
+                    <span class="consult-stat-num" id="docActiveConsultsCount" style="color: #16a34a;">0</span>
+                    <span class="consult-stat-lbl">In Active Consultation</span>
+                  </div>
+                  <div class="consult-stat-card">
+                    <span class="consult-stat-num" id="docWaitingConsultsCount" style="color: #d97706;">0</span>
+                    <span class="consult-stat-lbl">Waiting at Cabin</span>
+                  </div>
+                  <div class="consult-stat-card">
+                    <span class="consult-stat-num" id="docCompletedConsultsCount" style="color: #64748b;">0</span>
+                    <span class="consult-stat-lbl">Completed Today</span>
+                  </div>
+                </div>
+
+                <!-- Live Consultation Assignment Table -->
+                <div class="admin-table-wrapper" style="margin-top: 16px;">
+                  <table class="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Patient Details</th>
+                        <th>Consulting Doctor &amp; Specialty</th>
+                        <th>Cabin / Location</th>
+                        <th>Token #</th>
+                        <th>Consultation Status</th>
+                        <th>Duration / Time</th>
+                        <th style="text-align: right;">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="docConsultationsTableBody">
+                      <!-- Rendered dynamically -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+
+
+    <!-- ================= BOTTOM NAV ================= -->
+    <nav class="bottom-nav">
+
+      <button
+        type="button"
+        onclick="showScreen('welcome')"
+      >
+        🏠
+        <span>Home</span>
+      </button>
+
+      <button
+        type="button"
+        onclick="showScreen('registration')"
+      >
+        👤
+        <span>Patient</span>
+      </button>
+
+    </nav>
+
+
+
+    <!-- ================= PRIVACY MODAL ================= -->
+    <div
+      id="privacyModal"
+      class="modal hidden"
+    >
+
+      <div class="modal-box">
+
+        <button
+          type="button"
+          class="close"
+          onclick="togglePrivacy()"
+        >
+          ×
+        </button>
+
+        <h2>
+          🔐 Privacy & Consent
+        </h2>
+
+        <p>
+          MediKiosk prototype follows data-minimization principles
+          and records consent before sharing the demo patient summary.
+        </p>
+
+        <ul>
+
+          <li>
+            Encrypted transport should be used in production.
+          </li>
+
+          <li>
+            Role-based access should protect clinical data.
+          </li>
+
+          <li>
+            Audit logs record important access events.
+          </li>
+
+          <li>
+            Authorized health integrations require approved APIs
+            and security review.
+          </li>
+
+        </ul>
+
+        <button
+          type="button"
+          class="primary full"
+          onclick="togglePrivacy()"
+        >
+          Close
+        </button>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- ================= TOAST ================= -->
+    <div
+      id="toast"
+      class="toast"
+    ></div>
+
+    <!-- ================= SIMULATED SMS ALERT ================= -->
+    <div id="smsAlertModal" class="sms-modal hidden" role="dialog" aria-modal="true" aria-labelledby="smsSenderTitle">
+      <div class="sms-phone-card">
+        <div class="sms-top-notch"></div>
+        <div class="sms-card-header">
+          <div class="sms-brand-icon">💬</div>
+          <div class="sms-header-text">
+            <b id="smsSenderTitle">SMS Notification</b>
+            <span id="smsPhoneRecipient" class="sms-to-number">To: +91 9876543210</span>
+          </div>
+          <button type="button" class="sms-close-btn" onclick="dismissSmsModal()" aria-label="Close SMS">✕</button>
+        </div>
+        <div class="sms-card-body">
+          <div class="sms-bubble">
+            <div class="sms-bubble-tag">🏥 MediKiosk Patient Alert</div>
+            <p>Welcome to MediKiosk! Your registration is complete.</p>
+            <p>Your Kiosk User ID is: <strong id="smsGeneratedUserId" class="sms-highlight-id">MK-88219</strong></p>
+            <p class="sms-sub">Use this ID anytime at the kiosk. Your details are now loaded on screen.</p>
+          </div>
+        </div>
+        <div class="sms-card-footer">
+          <span class="sms-timestamp">Delivered just now</span>
+          <button type="button" class="primary sm-btn" onclick="dismissSmsModal()">Continue to Sign In →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TOP BAR PATIENT PROFILE MODAL ================= -->
+    <div id="patientProfileModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="profileModalHeading" onclick="if (event.target === this) togglePatientProfileModal(false)">
+      <div class="modal-box profile-modal-box">
+        <button type="button" class="close" onclick="togglePatientProfileModal(false)" aria-label="Close Profile">×</button>
+
+        <div class="profile-banner card modal-profile-banner">
+          <div class="profile-avatar" id="profileAvatarInitial">👤</div>
+          <div>
+            <span class="eyebrow" id="profileModalHeading">PATIENT PROFILE &amp; PREVIOUS VISITS</span>
+            <h2 id="profileName">Eleanor Vance</h2>
+            <p id="profileMeta" class="muted">Account verified · Consent recorded</p>
+          </div>
+          <span class="profile-status">● Active Profile</span>
+        </div>
+
+        <div class="profile-modal-body">
+          <!-- 1. Patient Details: ID, Name, Age, Phone, Gender, Consent -->
+          <article class="profile-section-card">
+            <h3>👤 Patient Details</h3>
+            <div class="profile-fields-grid">
+              <div class="profile-field-box">
+                <span class="profile-field-label">Patient ID</span>
+                <b id="profileDetailUserId" class="profile-field-val" style="color: #1967d2;">MK-88219</b>
+              </div>
+              <div class="profile-field-box">
+                <span class="profile-field-label">Full Name</span>
+                <b id="profileDetailName" class="profile-field-val">Eleanor Vance</b>
+              </div>
+              <div class="profile-field-box">
+                <span class="profile-field-label">Age</span>
+                <b id="profileDetailAge" class="profile-field-val">34 years</b>
+              </div>
+              <div class="profile-field-box">
+                <span class="profile-field-label">Gender</span>
+                <b id="profileDetailGender" class="profile-field-val">Female</b>
+              </div>
+              <div class="profile-field-box">
+                <span class="profile-field-label">Mobile Phone</span>
+                <b id="profileDetailPhone" class="profile-field-val">9876543210</b>
+              </div>
+              <div class="profile-field-box">
+                <span class="profile-field-label">Consent &amp; Status</span>
+                <b class="profile-field-val profile-good">Consent Recorded</b>
+              </div>
+              <div class="profile-field-box" style="grid-column: 1 / -1;">
+                <span class="profile-field-label">Registered Address &amp; Locality</span>
+                <b id="profileDetailAddress" class="profile-field-val">Main Road, Bistupur, Jamshedpur - PIN 831001</b>
+              </div>
+              <div class="profile-field-box">
+                <span class="profile-field-label">ABHA ID</span>
+                <b id="profileDetailABHA" class="profile-field-val">Not linked</b>
+              </div>
+              <div class="profile-field-box">
+                <span class="profile-field-label">PIN Code</span>
+                <b id="profileDetailPincode" class="profile-field-val">831001</b>
+              </div>
+            </div>
+          </article>
+
+          <!-- 2. Location Information -->
+          <article class="profile-section-card">
+            <h3>📍 Location Information</h3>
+            <div class="profile-fields-grid">
+              <div class="profile-field-box">
+                <span class="profile-field-label">Address</span>
+                <b id="profilePatientAddress" class="profile-field-val">N/A</b>
+              </div>
+              <div class="profile-field-box">
+                <span class="profile-field-label">PIN Code</span>
+                <b id="profilePatientPincode" class="profile-field-val">N/A</b>
+              </div>
+              <div class="profile-field-box">
+                <span class="profile-field-label">Coordinates</span>
+                <b id="profilePatientCoordinates" class="profile-field-val">Not detected</b>
+              </div>
+            </div>
+          </article>
+
+          <!-- 3. Patient Name and Age Summary -->
+          <article class="profile-section-card">
+            <h3>📋 Quick Summary</h3>
+            <div class="profile-fields-grid">
+              <div class="profile-field-box">
+                <span class="profile-field-label">Patient Name</span>
+                <b id="profilePatientName" class="profile-field-val">N/A</b>
+              </div>
+              <div class="profile-field-box">
+                <span class="profile-field-label">Age</span>
+                <b id="profilePatientAge" class="profile-field-val">N/A</b>
+              </div>
+              <div class="profile-field-box">
+                <span class="profile-field-label">Gender</span>
+                <b id="profilePatientGender" class="profile-field-val">N/A</b>
+              </div>
+              <div class="profile-field-box">
+                <span class="profile-field-label">Phone</span>
+                <b id="profilePatientPhone" class="profile-field-val">N/A</b>
+              </div>
+              <div class="profile-field-box">
+                <span class="profile-field-label">ABHA Status</span>
+                <b id="profilePatientABHA" class="profile-field-val">N/A</b>
+              </div>
+            </div>
+          </article>
+
+          <!-- 2. Previous Visits with Date and Time -->
+          <article class="profile-section-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <h3 style="margin: 0;">📅 Previous Visits with Date &amp; Time</h3>
+              <span class="profile-source-badge" id="profileVisitCount">2 saved visits on file</span>
+            </div>
+            <p class="muted" style="margin-bottom: 14px; font-size: 12.5px;">Past triage encounters and consultation timestamps for this patient:</p>
+            <div id="visitHistoryList" class="visit-history-list">
+              <!-- Dynamically populated with date, time, symptoms, and priority -->
+            </div>
+          </article>
+        </div>
+
+        <div class="profile-modal-actions" style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+          <button type="button" class="secondary" onclick="togglePatientProfileModal(false)">Close</button>
+          <button type="button" class="primary" onclick="togglePatientProfileModal(false); startNewVisit();">🩺 Continue Consultation →</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ================= ADMIN AUTH MODAL (DEVELOPER ACCESS) ================= -->
+    <div id="adminAuthModal" class="modal hidden admin-auth-modal" role="dialog" aria-modal="true" aria-labelledby="adminAuthTitle">
+      <div class="modal-box admin-auth-box">
+        <button type="button" class="close" onclick="closeAdminAuthModal()" aria-label="Close Admin Modal">×</button>
+        <div class="admin-auth-header">
+          <div class="admin-auth-icon">🛡️</div>
+          <div>
+            <h2 id="adminAuthTitle">Developer &amp; Backend Sign In</h2>
+            <p class="muted" style="margin: 0; font-size: 13px;">Restricted administrative access for hospital staff &amp; engineers</p>
+          </div>
+        </div>
+
+        <form id="adminLoginForm" onsubmit="event.preventDefault(); handleAdminLogin();" style="margin-top: 16px;">
+          <div class="field">
+            <label for="adminLoginUserId">Developer / Admin User ID</label>
+            <input type="text" id="adminLoginUserId" placeholder="Enter Admin ID" required autocomplete="username">
+          </div>
+          <div class="field" style="margin-top: 12px;">
+            <label for="adminLoginPassword">Admin Password</label>
+            <input type="password" id="adminLoginPassword" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+
+          <div id="adminAuthStatus" class="status" style="margin-top: 10px;"></div>
+
+          <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+            <button type="button" class="secondary" onclick="closeAdminAuthModal()">Cancel</button>
+            <button type="submit" class="primary" id="adminLoginSubmitBtn">🔓 Sign In to Dashboard</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- ================= ADMIN UPDATE PATIENT MODAL ================= -->
+    <div id="adminUpdatePatientModal" class="modal hidden admin-submodal" role="dialog" aria-modal="true" aria-labelledby="updatePatientModalTitle">
+      <div class="modal-box admin-update-modal-box" style="max-width: 620px; width: min(620px, 95vw); max-height: 88vh; overflow-y: auto; padding: 18px 22px; border-radius: 16px; box-shadow: 0 20px 50px rgba(15, 23, 42, 0.35); background: #ffffff;">
+        <button type="button" class="close" onclick="closeUpdatePatientModal()" aria-label="Close" style="top: 14px; right: 16px; font-size: 22px;">×</button>
+        
+        <!-- Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 12px; padding-right: 28px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 20px;">✏️</span>
+            <div>
+              <h2 id="updatePatientModalTitle" style="margin: 0; font-size: 17px; font-weight: 700; color: #0f172a; line-height: 1.2;">Update Patient Record</h2>
+              <span class="muted" style="font-size: 11.5px; color: #64748b;">ID: <strong id="updateModalPatientId" style="color: #2563eb; font-family: monospace;">MK-88219</strong></span>
+            </div>
+          </div>
+          <span style="background: #eff6ff; color: #1d4ed8; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; border: 1px solid #bfdbfe;">Admin Directory</span>
+        </div>
+
+        <form id="adminUpdatePatientForm" onsubmit="event.preventDefault(); saveUpdatedPatient();">
+          <input type="hidden" id="updatePatientKey">
+          
+          <!-- Row 1: Full Name & Phone -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+            <div class="field" style="margin-bottom: 0;">
+              <label for="updatePatientName" style="font-size: 11.5px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">Full Name *</label>
+              <input type="text" id="updatePatientName" required style="width: 100%; height: 34px; padding: 5px 9px; font-size: 13px; border-radius: 6px; border: 1.5px solid #cbd5e1; box-sizing: border-box;">
+            </div>
+            <div class="field" style="margin-bottom: 0;">
+              <label for="updatePatientPhone" style="font-size: 11.5px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">Phone (10 digits) *</label>
+              <input type="tel" id="updatePatientPhone" pattern="[0-9]{10}" placeholder="10-digit number" required style="width: 100%; height: 34px; padding: 5px 9px; font-size: 13px; border-radius: 6px; border: 1.5px solid #cbd5e1; box-sizing: border-box;">
+            </div>
+          </div>
+
+          <!-- Row 2: Age, Gender & Postal PIN -->
+          <div style="display: grid; grid-template-columns: 0.9fr 1.1fr 1.3fr; gap: 10px; margin-bottom: 8px;">
+            <div class="field" style="margin-bottom: 0;">
+              <label for="updatePatientAge" style="font-size: 11.5px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">Age *</label>
+              <input type="number" id="updatePatientAge" min="1" max="120" placeholder="Yrs" required style="width: 100%; height: 34px; padding: 5px 8px; font-size: 13px; border-radius: 6px; border: 1.5px solid #cbd5e1; box-sizing: border-box;">
+            </div>
+            <div class="field" style="margin-bottom: 0;">
+              <label for="updatePatientGender" style="font-size: 11.5px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">Gender *</label>
+              <select id="updatePatientGender" required style="width: 100%; height: 34px; padding: 5px 8px; font-size: 13px; border-radius: 6px; border: 1.5px solid #cbd5e1; box-sizing: border-box; background: #fff;">
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+                <option value="Non-binary">Non-binary</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field" style="margin-bottom: 0;">
+              <label for="updatePatientPincode" style="font-size: 11.5px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">📍 PIN Code (6 digits) *</label>
+              <input type="text" id="updatePatientPincode" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="e.g. 831001" required style="width: 100%; height: 34px; padding: 5px 9px; font-size: 13px; font-weight: 600; border-radius: 6px; border: 1.5px solid #cbd5e1; box-sizing: border-box;">
+            </div>
+          </div>
+
+          <!-- Row 3: Residential Address -->
+          <div class="field" style="margin-bottom: 8px;">
+            <label for="updatePatientAddress" style="font-size: 11.5px; font-weight: 600; color: #334155; margin-bottom: 3px; display: flex; justify-content: space-between;">
+              <span>🏠 Residential Address &amp; Location Details *</span>
+              <span style="font-size: 10.5px; font-weight: 400; color: #64748b;">Sets nearby doctor/hospital recommendations</span>
+            </label>
+            <textarea id="updatePatientAddress" rows="1" placeholder="e.g. Main Road, Bistupur, Near Regent Hotel" required style="width: 100%; height: 36px; min-height: 36px; max-height: 70px; padding: 6px 9px; font-family: inherit; font-size: 13px; border-radius: 6px; border: 1.5px solid #cbd5e1; box-sizing: border-box; resize: vertical;"></textarea>
+          </div>
+
+          <!-- Row 4: Chief Complaint & Medications -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+            <div class="field" style="margin-bottom: 0;">
+              <label for="updatePatientSymptoms" style="font-size: 11.5px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">Symptoms / Chief Complaint</label>
+              <textarea id="updatePatientSymptoms" rows="1" placeholder="e.g. Fever, cough for 2 days" style="width: 100%; height: 34px; min-height: 34px; max-height: 65px; padding: 5px 9px; font-family: inherit; font-size: 12.5px; border-radius: 6px; border: 1.5px solid #cbd5e1; box-sizing: border-box; resize: vertical;"></textarea>
+            </div>
+            <div class="field" style="margin-bottom: 0;">
+              <label for="updatePatientMedicines" style="font-size: 11.5px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">Current Medications</label>
+              <input type="text" id="updatePatientMedicines" placeholder="e.g. Paracetamol 500mg" style="width: 100%; height: 34px; padding: 5px 9px; font-size: 12.5px; border-radius: 6px; border: 1.5px solid #cbd5e1; box-sizing: border-box;">
+            </div>
+          </div>
+
+          <!-- Row 5: Known Allergies -->
+          <div class="field" style="margin-bottom: 12px;">
+            <label for="updatePatientAllergies" style="font-size: 11.5px; font-weight: 600; color: #334155; margin-bottom: 3px; display: block;">⚠️ Known Allergies</label>
+            <input type="text" id="updatePatientAllergies" placeholder="e.g. Penicillin, Peanuts, None reported" style="width: 100%; height: 34px; padding: 5px 9px; font-size: 12.5px; border-radius: 6px; border: 1.5px solid #cbd5e1; box-sizing: border-box;">
+          </div>
+
+          <!-- Action Footer: Sticky, highlighted & unmissable -->
+          <div class="admin-update-sticky-footer">
+            <button type="button" class="secondary" onclick="closeUpdatePatientModal()" style="padding: 8px 16px; border-radius: 7px; font-size: 13px; border: 1.5px solid #cbd5e1; background: #f8fafc; color: #475569; font-weight: 600; cursor: pointer;">Cancel</button>
+            <button type="submit" id="btnSubmitPatientUpdate" class="primary" style="background: #2563eb; color: #ffffff; font-weight: 700; font-size: 13.5px; padding: 9px 22px; border-radius: 7px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(37,99,235,0.3); transition: all 0.15s ease;">
+              <span>💾 Save Changes</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- ================= ADMIN ASSIGN CONSULTATION MODAL ================= -->
+    <div id="adminAssignConsultationModal" class="modal hidden admin-submodal" role="dialog" aria-modal="true" aria-labelledby="assignConsultModalTitle">
+      <div class="modal-box" style="max-width: 520px;">
+        <button type="button" class="close" onclick="closeAssignConsultationModal()" aria-label="Close">×</button>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <div style="font-size: 28px;">🩺</div>
+          <div>
+            <h2 id="assignConsultModalTitle" style="margin: 0; font-size: 20px;">Assign Doctor Consultation</h2>
+            <p class="muted" style="margin: 0; font-size: 13px;">Pair a patient with a consulting physician</p>
+          </div>
+        </div>
+
+        <form id="assignConsultationForm" onsubmit="event.preventDefault(); saveNewConsultation();">
+          <div class="field" style="margin-bottom: 12px;">
+            <label for="assignConsultPatient">Select Patient *</label>
+            <select id="assignConsultPatient" required></select>
+          </div>
+
+          <div class="field" style="margin-bottom: 12px;">
+            <label for="assignConsultDoctor">Select Consulting Doctor *</label>
+            <select id="assignConsultDoctor" required>
+              <option value="">-- Select Registered Doctor --</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div class="field">
+              <label for="assignConsultToken">Token Number</label>
+              <input type="text" id="assignConsultToken" placeholder="e.g. Token #15" required>
+            </div>
+            <div class="field">
+              <label for="assignConsultStatus">Status</label>
+              <select id="assignConsultStatus" required>
+                <option value="In Consultation">🟢 In Consultation</option>
+                <option value="Waiting">🟡 Waiting at Cabin</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+            <button type="button" class="secondary" onclick="closeAssignConsultationModal()">Cancel</button>
+            <button type="submit" class="primary">🩺 Confirm Assignment</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- ================= DOCTOR AUTH MODAL ================= -->
+    <div id="doctorAuthModal" class="modal hidden admin-auth-modal" role="dialog" aria-modal="true" aria-labelledby="doctorAuthTitle">
+      <div class="modal-box admin-auth-box" style="max-width: 520px;">
+        <button type="button" class="close" onclick="closeDoctorAuthModal()" aria-label="Close Doctor Sign In">×</button>
+        <div class="admin-auth-header">
+          <div class="topbar-doctor-avatar" style="font-size: 24px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #0d9488); color: white;">🩺</div>
+          <div>
+            <h2 id="doctorAuthTitle" style="margin: 0; font-size: 20px;">Clinical Doctor Portal</h2>
+            <p class="muted" style="margin: 0; font-size: 13px;">Sign in to workstation or register new physician profile</p>
+          </div>
+        </div>
+
+        <!-- Doctor Auth Tab Navigation -->
+        <div class="doctor-auth-tabs" style="display: flex; gap: 8px; margin: 16px 0 14px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 8px;">
+          <button type="button" id="doctorTabSignInBtn" class="doctor-auth-tab active" onclick="switchDoctorAuthTab('signin')">🔑 Doctor Sign In</button>
+          <button type="button" id="doctorTabSignUpBtn" class="doctor-auth-tab" onclick="switchDoctorAuthTab('signup')">📝 Doctor Sign Up</button>
+        </div>
+
+        <!-- 1. DOCTOR SIGN IN VIEW -->
+        <div id="doctorSignInView">
+          <form id="doctorLoginForm" onsubmit="event.preventDefault(); handleDoctorLogin();">
+            <div class="field" style="margin-bottom: 14px;">
+              <label for="doctorLoginId">Doctor ID <span class="required" style="color: #dc2626;">*</span></label>
+              <input type="text" id="doctorLoginId" placeholder="e.g. DOC-1368 or registered full name" required autocomplete="username">
+            </div>
+
+            <div class="field" style="margin-bottom: 14px;">
+              <label for="doctorPin">Doctor Password <span class="required" style="color: #dc2626;">*</span></label>
+              <div style="position: relative;">
+                <input type="password" id="doctorPin" placeholder="Enter your registered password (e.g. Sharma4821)" required style="padding-right: 40px;" autocomplete="current-password">
+                <button type="button" onclick="toggleDoctorPwdVisibility()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 15px;" title="Show/Hide password">👁️</button>
+              </div>
+              <small style="color: #64748b; font-size: 11.5px;">Registered doctors: use your auto-generated password (LastName + numbers).</small>
+            </div>
+
+            <!-- Approval Notice Area -->
+            <div id="doctorSignInApprovalNotice" class="hidden" style="margin: 12px 0; padding: 12px 14px; border-radius: 10px; font-size: 13px; line-height: 1.4;"></div>
+
+            <div id="doctorAuthStatus" class="status" style="margin-top: 10px;"></div>
+
+            <div style="display: flex; gap: 10px; margin-top: 18px; justify-content: flex-end; flex-wrap: wrap;">
+              <button type="button" class="secondary" onclick="closeDoctorAuthModal()">Cancel</button>
+              <button type="button" class="secondary hidden" id="doctorCheckApprovalBtn" onclick="checkActiveDoctorApproval()">🔄 Check Approval</button>
+              <button type="submit" class="primary" id="doctorLoginSubmitBtn">🩺 Sign In to Workstation</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 2. DOCTOR SIGN UP VIEW -->
+        <div id="doctorSignUpView" class="hidden">
+          <form id="doctorSignupForm" onsubmit="event.preventDefault(); handleDoctorSignup();">
+            <div class="field" style="margin-bottom: 12px;">
+              <label for="doctorSignupFullName">Doctor Full Name <span class="required" style="color: #dc2626;">*</span></label>
+              <input type="text" id="doctorSignupFullName" placeholder="e.g. Dr. Aryan Sharma" required oninput="previewGeneratedPassword(this.value)">
+              <small style="color: #0369a1; font-size: 11.5px;">💡 Password will be auto-generated from your <b>Last Name + numbers</b>.</small>
+            </div>
+
+            <div class="field" style="margin-bottom: 12px;">
+              <label for="doctorSignupSpecialty">Specialty / Department <span class="required" style="color: #dc2626;">*</span></label>
+              <select id="doctorSignupSpecialty" required>
+                <option value="Cardiology">Cardiology</option>
+                <option value="General Medicine">General Medicine</option>
+                <option value="Pulmonology">Pulmonology</option>
+                <option value="Pediatrics">Pediatrics</option>
+                <option value="Orthopedics">Orthopedics</option>
+                <option value="ENT">ENT</option>
+                <option value="Gastroenterology">Gastroenterology</option>
+                <option value="Dermatology">Dermatology</option>
+                <option value="Neurology">Neurology</option>
+                <option value="Emergency Medicine">Emergency Medicine</option>
+              </select>
+            </div>
+
+            <div class="field" style="margin-bottom: 12px;">
+              <label for="doctorSignupCabin">Cabin / Room Location <span class="required" style="color: #dc2626;">*</span></label>
+              <input type="text" id="doctorSignupCabin" placeholder="e.g. Room 304 (Block B)" required value="Room 304 (Block B)">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+              <div class="field">
+                <label for="doctorSignupPhone">Mobile Number <span class="required" style="color: #dc2626;">*</span></label>
+                <input type="tel" id="doctorSignupPhone" maxlength="10" placeholder="10-digit number" required>
+              </div>
+              <div class="field">
+                <label for="doctorSignupLicense">License / Registration No. <span class="required" style="color: #dc2626;">*</span></label>
+                <input type="text" id="doctorSignupLicense" placeholder="e.g. MCI-48291" required>
+              </div>
+            </div>
+
+            <!-- Password Preview Box -->
+            <div id="doctorPasswordPreviewBox" style="margin: 10px 0 14px; padding: 10px 14px; background: #f0f9ff; border: 1.5px dashed #0284c7; border-radius: 10px; font-size: 13px; color: #0369a1;">
+              Auto-Generated Password Preview: <strong id="doctorPwdPreviewText" style="font-family: monospace; font-size: 14px; color: #0f172a;">— (Type Full Name above)</strong>
+            </div>
+
+            <div id="doctorSignupStatus" class="status" style="margin-top: 10px;"></div>
+
+            <div style="display: flex; gap: 10px; margin-top: 18px; justify-content: flex-end;">
+              <button type="button" class="secondary" onclick="switchDoctorAuthTab('signin')">Back to Sign In</button>
+              <button type="submit" class="primary" id="doctorSignupSubmitBtn">📝 Register &amp; Send to Admin</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 3. DOCTOR SIGN UP SUCCESS CARD -->
+        <div id="doctorSignupSuccessCard" class="hidden" style="margin-top: 14px; padding: 18px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 26px;">🎉</span>
+              <div>
+                <h4 style="margin: 0; color: #166534; font-size: 16px;">Doctor Profile Registered!</h4>
+                <small style="color: #15803d;">Approval request dispatched to Hospital Administrator.</small>
+              </div>
+            </div>
+            <span style="background: #fef08a; color: #854d0e; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800;">
+              ⏳ PENDING ADMIN APPROVAL
+            </span>
+          </div>
+
+          <div style="background: white; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 13px; color: #1e293b; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
+            <div><span style="color: #64748b; font-size: 11px; display: block;">ASSIGNED DOCTOR ID</span><strong id="succDocId" style="color: #0284c7; font-family: monospace; font-size: 14px;">DOC-XXXX</strong></div>
+            <div><span style="color: #64748b; font-size: 11px; display: block;">PHYSICIAN NAME</span><strong id="succDocName">—</strong></div>
+            <div><span style="color: #64748b; font-size: 11px; display: block;">SPECIALTY &amp; CABIN</span><strong id="succDocDept">—</strong></div>
+            <div>
+              <span style="color: #64748b; font-size: 11px; display: block;">GENERATED PASSWORD (LASTNAME + NO.)</span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <strong id="succDocPwd" style="color: #166534; font-family: monospace; font-size: 15px;">—</strong>
+                <button type="button" class="secondary" onclick="copyDoctorCredentials()" style="padding: 2px 8px; font-size: 11px;">📋 Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 12px; color: #92400e; display: flex; gap: 8px; align-items: flex-start;">
+            <span style="font-size: 16px;">⚠️</span>
+            <div>
+              <strong>Admin Approval Required:</strong> You cannot enter the Clinical Workstation until the Hospital Administrator allows your account in the <b>Doctors Approval</b> portal.
+            </div>
+          </div>
+
+          <button type="button" class="primary full" onclick="switchToSignInWithDoctorCredentials()">🔑 Proceed to Sign In</button>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ================= REPORT A PROBLEM / KIOSK INCIDENT MODAL ================= -->
+    <div id="reportProblemModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="reportProblemTitle">
+      <div class="modal-box" style="max-width: 520px;">
+        <button type="button" class="close" onclick="closeReportProblemModal()" aria-label="Close Report">×</button>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <div style="font-size: 32px;">⚠️</div>
+          <div>
+            <h2 id="reportProblemTitle" style="margin: 0; font-size: 20px;">Report a Problem / Kiosk Issue</h2>
+            <p class="muted" style="margin: 0; font-size: 13px;">Your problem report is sent directly to the Hospital Admin Box</p>
+          </div>
+        </div>
+
+        <form id="userProblemForm" onsubmit="event.preventDefault(); submitUserProblem();">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div class="field">
+              <label for="problemPatientName">Your Name *</label>
+              <input type="text" id="problemPatientName" placeholder="Enter your name" required>
+            </div>
+            <div class="field">
+              <label for="problemPatientPhone">Phone Number *</label>
+              <input type="tel" id="problemPatientPhone" placeholder="10-digit mobile" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div class="field">
+              <label for="problemCategory">Problem Category *</label>
+              <select id="problemCategory" required>
+                <option value="🖥️ Touchscreen / Hardware Glitch">🖥️ Touchscreen / Hardware Glitch</option>
+                <option value="🩺 Symptom / Triage Assessment Concern">🩺 Symptom / Triage Concern</option>
+                <option value="👨‍⚕️ Excessive Wait Time / Doctor Delay">👨‍⚕️ Excessive Doctor Wait Time</option>
+                <option value="💳 Billing &amp; Payment Dispute">💳 Billing &amp; Payment Dispute</option>
+                <option value="🖨️ Printer / Token Slip Not Printing">🖨️ Slip / Token Not Printing</option>
+                <option value="❓ General Feedback / Other">❓ General Feedback / Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="problemPriority">Urgency Level</label>
+              <select id="problemPriority">
+                <option value="high">🚨 Urgent / Needs Immediate Help</option>
+                <option value="medium" selected>⚠️ Standard Concern</option>
+                <option value="low">ℹ️ Minor Feedback</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field" style="margin-bottom: 16px;">
+            <label for="problemDescription">Describe the Problem *</label>
+            <textarea id="problemDescription" rows="3" placeholder="Please describe what went wrong or what assistance you need..." required style="width: 100%; border-radius: 8px; border: 1.5px solid #cbd5e1; padding: 10px; font-family: inherit; font-size: 13.5px; box-sizing: border-box;"></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="secondary" onclick="closeReportProblemModal()">Cancel</button>
+            <button type="submit" class="primary" style="background: #dc2626; border-color: #dc2626;">🚨 Submit Problem Report</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- ================= ADMIN NEW BILL MODAL ================= -->
+    <div id="adminNewBillModal" class="modal hidden admin-submodal" role="dialog" aria-modal="true" aria-labelledby="newBillModalTitle">
+      <div class="modal-box" style="max-width: 500px;">
+        <button type="button" class="close" onclick="closeNewBillModal()" aria-label="Close Bill Modal">×</button>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <div style="font-size: 28px;">💳</div>
+          <div>
+            <h2 id="newBillModalTitle" style="margin: 0; font-size: 20px;">Generate Hospital Kiosk Bill</h2>
+            <p class="muted" style="margin: 0; font-size: 13px;">Create new patient invoice or payment record</p>
+          </div>
+        </div>
+
+        <form id="adminNewBillForm" onsubmit="event.preventDefault(); saveNewBill();">
+          <div class="field" style="margin-bottom: 12px;">
+            <label for="billPatientSelect">Select Patient *</label>
+            <select id="billPatientSelect" required></select>
+          </div>
+
+          <div class="field" style="margin-bottom: 12px;">
+            <label for="billService">Service / Clinical Item *</label>
+            <select id="billService" onchange="onBillServiceChange(this.value)" required>
+              <option value="Specialist Consultation (Cardiology)|500">Specialist Consultation (Cardiology) - ₹500</option>
+              <option value="General OPD Consultation|250">General OPD Consultation - ₹250</option>
+              <option value="Emergency AI Triage &amp; Vitals|0">Emergency AI Triage &amp; Vitals - Free (₹0)</option>
+              <option value="Complete Blood Count (CBC) Panel|450">Complete Blood Count (CBC) Panel - ₹450</option>
+              <option value="ECG Diagnostic Test|350">ECG Diagnostic Test - ₹350</option>
+              <option value="Chest X-Ray Digital|600">Chest X-Ray Digital - ₹600</option>
+              <option value="Pharmacy Prescription Dispensation|320">Pharmacy Prescription Dispensation - ₹320</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div class="field">
+              <label for="billAmount">Amount (₹) *</label>
+              <input type="number" id="billAmount" value="500" min="0" required>
+            </div>
+            <div class="field">
+              <label for="billPaymentMode">Payment Method *</label>
+              <select id="billPaymentMode" required>
+                <option value="UPI / QR Code">📱 UPI / QR Code</option>
+                <option value="Cash">💵 Cash at Kiosk</option>
+                <option value="Card (Debit/Credit)">💳 Card (Debit/Credit)</option>
+                <option value="PM-JAY Ayushman Bharat">🛡️ PM-JAY Ayushman Bharat</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field" style="margin-bottom: 16px;">
+            <label for="billStatus">Payment Status</label>
+            <select id="billStatus" required>
+              <option value="Paid">🟢 Paid / Settled</option>
+              <option value="Pending">🟡 Pending Payment</option>
+            </select>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="secondary" onclick="closeNewBillModal()">Cancel</button>
+            <button type="submit" class="primary">💳 Issue Invoice</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- JavaScript -->
+  <script src="i18n.js"></script>
+  <script src="script.js?v=2026"></script>
+
+</body>
+</html>
