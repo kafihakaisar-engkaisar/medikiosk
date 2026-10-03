@@ -1,6 +1,4 @@
-const API_URL = (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"))
-  ? "http://127.0.0.1:8000"
-  : (window.MEDIKIOSK_API_URL || "");
+const API_URL = "http://127.0.0.1:8000";
 
 const LANGUAGE_CODES = {
   English: "en-IN",

@@ -58,13 +58,12 @@ medikiosk/
 ├── script.js                    # Core application logic, routing, triage, geolocation
 ├── style.css                    # Responsive styling, accessible themes, and kiosk layout
 ├── i18n.js                      # Multilingual dictionaries (English, Hindi, Hinglish, Bhojpuri, Urdu)
+├── workflow-diagram.html        # Interactive architecture & workflow diagram
 ├── backend/
-│   ├── main.py                  # FastAPI application and REST endpoints
+│   ├── main.py                  # FastAPI application, models, and REST endpoints
 │   ├── database.py              # SQLite database schema, migrations, and seeding
-│   ├── ai_triage.py             # Rule-based and AI symptom triage engine
-│   ├── safety_engine.py         # Clinical safety evaluation engine
-│   ├── models.py                # Data models and schemas
 │   └── requirements.txt         # Python dependencies
+├── vercel.json                  # Cloud deployment configuration
 └── README.md                    # Project documentation
 ```
 

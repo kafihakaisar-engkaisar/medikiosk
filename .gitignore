@@ -1,3 +1,6 @@
+# Vercel build output
+.vercel
+
 # Python & Virtual Environments
 venv/
 backend/venv/
@@ -7,9 +10,6 @@ backend/__pycache__/
 *$py.class
 *.so
 .Python
-*.egg-info/
-dist/
-build/
 
 # Database files
 *.db
@@ -25,16 +25,10 @@ backend/uploads/
 .env
 backend/.env
 
-# Scratch & temporary test files
+# Temporary / backup files
 scratch/
 *.original.*
 *.bak
-
-# IDE files (preserve project vscode settings if needed)
-.idea/
-*.swp
-*.swo
-*~
 
 # Operating System files
 .DS_Store
